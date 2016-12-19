@@ -28,6 +28,8 @@ private slots:
 
     void on_pushButton_QueryClientInfo_clicked();
 
+    void on_pushButton_SetHost_clicked();
+
 private:
     Ui::MainWindow *ui;
     ClientSocket socket;

@@ -6,6 +6,9 @@ ClientSocket::ClientSocket(QObject *parent) : QObject(parent)
     startTimer( 5000 );
     counterHeartbeatDrops = 0;
     autoRestart = true;
+    hostIp = "";
+    hostPort = "";
+    hostId = 0;
 
     connect( &protocolManager, SIGNAL( executed_DTC(QString,QString)), this, SLOT( dataToClient(QString,QString) ) );
     connect( &protocolManager, SIGNAL( statusOk()), this, SLOT( handleStatusOk() ) );
@@ -37,10 +40,10 @@ void ClientSocket::sendHeartBeatPackage()
 {
         counterHeartbeatDrops = 0;
         QByteArray package;
-        protocolManager.setProtocolAddress( QString::number( HOST_ID ) );
+        protocolManager.setProtocolAddress( QString::number( hostId!=0 ? hostId : HOST_ID ) );
         protocolManager.createEmptyPackage( package );
         protocolManager.insertCommand_DFC( package, QString("%1:%2;%3:%4").arg(CMD).arg(DATA_CMD_HEARTBEAT)
-                                                                          .arg(FIELD_STATUS).arg( DATA_STATUS_OK ), QString::number( HOST_ID ), false);
+                                                                          .arg(FIELD_STATUS).arg( DATA_STATUS_OK ), QString::number( hostId!=0 ? hostId : HOST_ID ), false);
         tcpSocket->write(package);
 }
 
@@ -100,8 +103,8 @@ void ClientSocket::abortSocketConnection()
 bool ClientSocket::establishConnection()
 {
   counterHeartbeatDrops = 0;
-  QHostAddress address( QString( HOST_IP ) );
-  quint16 port = HOST_PORT;
+  QHostAddress address( QString( !hostIp.isEmpty() ? hostIp : HOST_IP ) );
+  quint16 port = !hostPort.isEmpty() ? hostPort.toInt() : HOST_PORT ;
   int tries = 0;
   do{
       tcpSocket->abort();
@@ -225,7 +228,7 @@ void ClientSocket::handleStatusOk()
 void ClientSocket::sendQueryConfiguration()
 {
     QByteArray package;
-    protocolManager.setProtocolAddress( QString::number( HOST_ID ) );
+    protocolManager.setProtocolAddress( QString::number( hostId!=0 ? hostId : HOST_ID ) );
     protocolManager.createEmptyPackage( package );
     protocolManager.insertCommand_QueryConfiguration(package,false);
     tcpSocket->write(package);
@@ -234,7 +237,7 @@ void ClientSocket::sendQueryConfiguration()
 void ClientSocket::sendSetConfiguration()
 {
     QByteArray package;
-    protocolManager.setProtocolAddress( QString::number( HOST_ID ) );
+    protocolManager.setProtocolAddress( QString::number( hostId!=0 ? hostId : HOST_ID ) );
     protocolManager.createEmptyPackage( package );
     protocolManager.insertCommand_SetConfiguration(package, 100, 200, 300, 2, 3, 4, false);
     tcpSocket->write(package);
@@ -243,8 +246,16 @@ void ClientSocket::sendSetConfiguration()
 void ClientSocket::sendQueryClientInfo(const QString &clientAddr)
 {
     QByteArray package;
-    protocolManager.setProtocolAddress( QString::number( HOST_ID ) );
+    protocolManager.setProtocolAddress( QString::number( hostId!=0 ? hostId : HOST_ID ) );
     protocolManager.createEmptyPackage( package );
     protocolManager.insertCommand_QueryClientInfo(package, clientAddr, false);
     tcpSocket->write(package);
+}
+
+void ClientSocket::setHostIp(const QString &ip)
+{
+    this->hostIp = ip;
+    int dotIndex = ip.lastIndexOf('.');
+    QString id = ip.mid( dotIndex+1 );
+    this->hostId = id.toInt();
 }

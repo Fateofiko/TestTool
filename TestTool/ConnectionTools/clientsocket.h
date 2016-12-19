@@ -27,6 +27,10 @@ public:
     int counterHeartbeatDrops;
     bool autoRestart;
 
+    QString hostIp;
+    QString hostPort;
+    int hostId;
+
     void sendDataToHost( const QString &messageForHost );
     void sendPackageToHost(const QByteArray &packageForHost);
     void restartTheSocket();
@@ -36,6 +40,7 @@ public:
     void sendQueryConfiguration();
     void sendSetConfiguration();
     void sendQueryClientInfo( const QString &clientAddr );
+    void setHostIp(const QString &ip);
 signals:
 
 public slots:

@@ -37,3 +37,9 @@ void MainWindow::on_pushButton_QueryClientInfo_clicked()
 {
     socket.sendQueryClientInfo( ui->lineEdit_ClientAddr->text() );
 }
+
+void MainWindow::on_pushButton_SetHost_clicked()
+{
+    socket.setHostIp( ui->lineEdit_HostIp->text() );
+    socket.hostPort = ui->lineEdit_HostPort->text();
+}

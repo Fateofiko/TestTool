@@ -14,6 +14,7 @@ ClientSocket::ClientSocket(QObject *parent) : QObject(parent)
     connect( &protocolManager, SIGNAL( statusOk()), this, SLOT( handleStatusOk() ) );
     connect( &protocolManager, SIGNAL( executed_CurrentConfiguration(int,int,int,int,int,int)), this, SLOT( handleCurrentConfiguration(int,int,int,int,int,int)) );
     connect( &protocolManager, SIGNAL( executed_ClientInfo(QString,ClientStates)), this, SLOT( handleDeliverClientInfo(QString,ClientStates)) );
+    connect( &protocolManager, SIGNAL( executed_ScannedMessage(ScanType,BarcodeState,QString)), this, SLOT( handleScannedMessage(ScanType,BarcodeState,QString) ) );
 }
 
 ClientSocket::~ClientSocket()
@@ -184,7 +185,7 @@ void ClientSocket::manageBufferedData(QByteArray &buffer)
 
 void ClientSocket::dataToClient( const QString &addr, const QString &data )
 {
-    qDebug() << data << addr;
+//    qDebug() << data << addr;
     if( data.contains( DATA_CMD_HEARTBEAT ) ){
         sendHeartBeatPackage();
     }
@@ -225,6 +226,28 @@ void ClientSocket::handleStatusOk()
     qDebug()<<"status OK ...";
 }
 
+void ClientSocket::handleScannedMessage(ScanType type, BarcodeState state, const QString &scanedData)
+{
+    QString scanType;
+    QString scanState;
+    switch(type){
+        case SCAN_AUTOMATIC : scanType = "auto"; break;
+        case SCAN_MANUAL : scanType = "manual"; break;
+        default: scanType = "error"; break;
+    }
+    switch(state){
+        case SUCCESSFULLY_SCANNED : scanState = "Barcode successfully scanned"; break;
+        case TIMEOUT : scanState = "Timeout (ACT time exceeded)"; break;
+        case CAMERA_NOT_AVAILABLE: scanState = "Camera not available/connected"; break;
+        case CAMERA_INTERNAL_ERROR :  scanState = "Camera internal error"; break;
+        case OCR_ERROR : scanState = " OCR Error (too dark, ...)"; break;
+        case UNSPECIFIED_ERROR: scanState = "Unspecified Error"; break;
+        default:  scanState = "Error"; break;
+    }
+
+    qDebug()<<scanedData<< QString("  %1  %2  ").arg(scanType).arg(scanState);
+}
+
 void ClientSocket::sendQueryConfiguration()
 {
     QByteArray package;
@@ -249,6 +272,77 @@ void ClientSocket::sendQueryClientInfo(const QString &clientAddr)
     protocolManager.setProtocolAddress( QString::number( hostId!=0 ? hostId : HOST_ID ) );
     protocolManager.createEmptyPackage( package );
     protocolManager.insertCommand_QueryClientInfo(package, clientAddr, false);
+    tcpSocket->write(package);
+}
+
+void ClientSocket::sendDisplayToClient(const QString &clientAddr)
+{
+    QByteArray package;
+    protocolManager.setProtocolAddress( QString::number( hostId!=0 ? hostId : HOST_ID ) );
+    protocolManager.createEmptyPackage( package );
+    protocolManager.insertCommand_DTC(package,QString("E002uuiioo123010000"),clientAddr,false);
+    tcpSocket->write(package);
+}
+
+void ClientSocket::sendDisplayConfiguration(const QString &clientAddr)
+{
+    QByteArray package;
+    protocolManager.setProtocolAddress( QString::number( hostId!=0 ? hostId : HOST_ID ) );
+    protocolManager.createEmptyPackage( package );
+    protocolManager.insertCommand_DTC(package, QString("V00002016"), clientAddr, false);
+    tcpSocket->write(package);
+}
+
+void ClientSocket::sendSpecialDisplay(const QString &clientAddr, const QString &screenMessage, int screenType)
+{
+    SpecialDisplayType type;
+    switch(screenType){
+        case 1: type = DISPLAY_EMPTY_CARTON ;       break;
+        case 2: type = DISPLAY_CARTON_EVACUATION;   break;
+        case 3: type = DISPLAY_ERROR ;              break;
+    default:    type = DISPLAY_EMPTY_CARTON;        break;
+    }
+    QChar cT = (int) type;
+    QByteArray package;
+    protocolManager.setProtocolAddress( QString::number( hostId!=0 ? hostId : HOST_ID ) );
+    protocolManager.createEmptyPackage( package );
+    protocolManager.insertCommand_DTC(package, QString("F%1%2%3").arg(QString(cT)).arg(screenMessage).arg("00001000"), clientAddr, false);
+    tcpSocket->write(package);
+}
+
+void ClientSocket::sendScan(const QString &clientAddr, int scanType, int scanTime)
+{
+    ScanType type;
+    switch(scanType){
+        case 1: type = SCAN_AUTOMATIC ;       break;
+        case 2: type = SCAN_MANUAL;   break;
+    default:    type = SCAN_MANUAL;        break;
+    }
+    char cT = (int) type;
+    QString time = QString::number(scanTime).right(3);
+    for(int i = time.size(); i < 3; i++){
+        time.append('0');
+    }
+    QByteArray package;
+    protocolManager.setProtocolAddress( QString::number( hostId!=0 ? hostId : HOST_ID ) );
+    protocolManager.createEmptyPackage( package );
+    protocolManager.insertCommand_DTC(package, QString("S%1%2").arg(cT).arg( time ), clientAddr, false);
+    tcpSocket->write(package);
+}
+
+void ClientSocket::sendDisableDisplay(const QString &clientAddr, int typeD)
+{
+    DisplayMode type;
+    switch(typeD){
+        case 1: type = SCAN_NORMAL ;       break;
+        case 2: type = SCAN_SPECIAL_PATTERN;   break;
+    default:    type = SCAN_NORMAL;        break;
+    }
+    char cT = (int) type;
+    QByteArray package;
+    protocolManager.setProtocolAddress( QString::number( hostId!=0 ? hostId : HOST_ID ) );
+    protocolManager.createEmptyPackage( package );
+    protocolManager.insertCommand_DTC(package, QString("Z%1").arg(cT), clientAddr, false);
     tcpSocket->write(package);
 }
 

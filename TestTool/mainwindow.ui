@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>603</width>
+    <width>794</width>
     <height>427</height>
    </rect>
   </property>
@@ -28,9 +28,9 @@
         <property name="geometry">
          <rect>
           <x>0</x>
-          <y>0</y>
-          <width>583</width>
-          <height>258</height>
+          <y>-92</y>
+          <width>759</width>
+          <height>350</height>
          </rect>
         </property>
         <layout class="QHBoxLayout" name="horizontalLayout">
@@ -43,31 +43,143 @@
             </sizepolicy>
            </property>
            <layout class="QGridLayout" name="gridLayout">
-            <item row="1" column="0">
-             <widget class="QPushButton" name="pushButton_setConfiguration">
-              <property name="text">
-               <string>Set Config</string>
+            <item row="0" column="1">
+             <widget class="QLineEdit" name="lineEdit_ClientAddr">
+              <property name="maxLength">
+               <number>4</number>
               </property>
+             </widget>
+            </item>
+            <item row="7" column="2">
+             <widget class="QComboBox" name="comboBox_screenType">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <item>
+               <property name="text">
+                <string>1</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>2</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>3</string>
+               </property>
+              </item>
              </widget>
             </item>
             <item row="0" column="0">
-             <widget class="QPushButton" name="pushButton_QueryConfiguration">
+             <widget class="QLabel" name="label_3">
               <property name="text">
-               <string>QueryConfig</string>
+               <string>Client address:</string>
               </property>
              </widget>
             </item>
-            <item row="2" column="0">
+            <item row="6" column="1">
+             <widget class="QLabel" name="label_4">
+              <property name="text">
+               <string>Screen message:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="7" column="0">
+             <widget class="QPushButton" name="pushButton_specialDisplay">
+              <property name="text">
+               <string>SpecialDisplay</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="0" colspan="2">
+             <widget class="QPushButton" name="pushButton_displayToClient">
+              <property name="text">
+               <string>Display To Client (cmd: E)</string>
+              </property>
+             </widget>
+            </item>
+            <item row="7" column="1">
+             <widget class="QLineEdit" name="lineEdit_screenMessage"/>
+            </item>
+            <item row="3" column="0" colspan="2">
              <widget class="QPushButton" name="pushButton_QueryClientInfo">
               <property name="text">
                <string>ClientInfo</string>
               </property>
              </widget>
             </item>
-            <item row="2" column="1">
-             <widget class="QLineEdit" name="lineEdit_ClientAddr">
-              <property name="maxLength">
-               <number>4</number>
+            <item row="2" column="0" colspan="2">
+             <widget class="QPushButton" name="pushButton_setConfiguration">
+              <property name="text">
+               <string>Set Config</string>
+              </property>
+             </widget>
+            </item>
+            <item row="8" column="2">
+             <widget class="QSpinBox" name="spinBox_scanTime">
+              <property name="maximum">
+               <number>9999</number>
+              </property>
+             </widget>
+            </item>
+            <item row="8" column="1">
+             <widget class="QComboBox" name="comboBox_scanType">
+              <item>
+               <property name="text">
+                <string>Auto</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Manual</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="5" column="0" colspan="2">
+             <widget class="QPushButton" name="pushButton_displayConf">
+              <property name="text">
+               <string>DisplayConfig (cmd: V)</string>
+              </property>
+             </widget>
+            </item>
+            <item row="8" column="0">
+             <widget class="QPushButton" name="pushButton_scan">
+              <property name="text">
+               <string>Scan</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0" colspan="2">
+             <widget class="QPushButton" name="pushButton_QueryConfiguration">
+              <property name="text">
+               <string>QueryConfig</string>
+              </property>
+             </widget>
+            </item>
+            <item row="9" column="2">
+             <widget class="QComboBox" name="comboBox_DisDisplayType">
+              <item>
+               <property name="text">
+                <string>Normal</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Special pattern</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item row="9" column="0" colspan="2">
+             <widget class="QPushButton" name="pushButton_DisableDisplay">
+              <property name="text">
+               <string>Disable Display</string>
               </property>
              </widget>
             </item>
@@ -167,7 +279,7 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>583</width>
+          <width>774</width>
           <height>79</height>
          </rect>
         </property>
@@ -194,7 +306,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>603</width>
+     <width>794</width>
      <height>27</height>
     </rect>
    </property>

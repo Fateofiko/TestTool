@@ -180,7 +180,8 @@ enum LightMode
     LIGHT_OFF = 48,                            ///< ‘0’: The digit/light/LED is switched off.
     LIGHT_ON = 49,                             ///< ‘1’: The digit/light/LED is switched on.
     LIGHT_BLINKING = 50,                       ///< ‘2’: The digit/light/LED is blinking
-    LIGHT_OPPOSITE_BLINKING = 51               ///< ‘3’: The digit/light/LED is blinking with the opposite phase as a digit in mode ‘2’.
+    LIGHT_OPPOSITE_BLINKING = 51,               ///< ‘3’: The digit/light/LED is blinking with the opposite phase as a digit in mode ‘2’.
+    LIGHT_NOT_USED = 46
 };
 
 /**
@@ -361,6 +362,7 @@ public:
      * @return
      */
     bool isPackageContainsSecondAddr(const QByteArray &package);
+    bool isPackageContainsCustomCmd(const QByteArray &package);
 
     // TERMINAL COMMANDS
     /**
@@ -487,7 +489,7 @@ public:
      * @see execCommand_DisplaySetConf()
      * @see executed_DisplaySetConf()
      */
-    void insertCommand_DisplaySetConf( QByteArray &package, Key key, KeyState keyState, int ledBlinkTime, int displayBlinkTime, bool includeSOH );
+    void insertCommand_DisplaySetConf(QByteArray &package, QList<KeyState> keysState, int ledBlinkTime, int displayBlinkTime, bool includeSOH );
 
     /**
      * @brief Constructs and inserts "Display" command into a package.
@@ -653,6 +655,8 @@ private:
      * @param append
      */
     void appendSOH( QByteArray &command, bool append );
+
+    bool isDataContainsCommand( const QByteArray &command );
 
     /**
      * @brief Append Int value to a command.
@@ -969,7 +973,7 @@ signals:
      * @see execCommand_DisplaySetConf()
      * @see insertCommand_DisplaySetConf()
      */
-    void executed_DisplaySetConf( Key key, KeyState keyState, int ledBlinkTime, int displayBlinkTime );
+    void executed_DisplaySetConf( QList< KeyState > keysState, int ledBlinkTime, int displayBlinkTime );
 
     /**
      * @brief Signal is emmited when "Display" command is received.
@@ -981,8 +985,10 @@ signals:
      * @see execCommand_Display()
      * @see insertCommand_Display()
      */
-    void executed_Display( const QString &data, LightMode elModeRed, LightMode elModeGreen, LightMode elModeBlue );
-
+    void executed_Display( const QString &data, const QString &dMode, const QString &dpMode,
+                           LightMode eModeRed, LightMode eModeGreen, LightMode eModeBlue,
+                           LightMode elModeRed, LightMode elModeGreen, LightMode elModeBlue,
+                           LightMode down, LightMode up, LightMode zc);
     /**
      * @brief Signal is emmited when "Special display" command is received.
      *

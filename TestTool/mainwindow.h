@@ -30,6 +30,16 @@ private slots:
 
     void on_pushButton_SetHost_clicked();
 
+    void on_pushButton_displayToClient_clicked();
+
+    void on_pushButton_displayConf_clicked();
+
+    void on_pushButton_specialDisplay_clicked();
+
+    void on_pushButton_scan_clicked();
+
+    void on_pushButton_DisableDisplay_clicked();
+
 private:
     Ui::MainWindow *ui;
     ClientSocket socket;

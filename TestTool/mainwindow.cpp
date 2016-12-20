@@ -43,3 +43,28 @@ void MainWindow::on_pushButton_SetHost_clicked()
     socket.setHostIp( ui->lineEdit_HostIp->text() );
     socket.hostPort = ui->lineEdit_HostPort->text();
 }
+
+void MainWindow::on_pushButton_displayToClient_clicked()
+{
+    socket.sendDisplayToClient( ui->lineEdit_ClientAddr->text() );
+}
+
+void MainWindow::on_pushButton_displayConf_clicked()
+{
+    socket.sendDisplayConfiguration( ui->lineEdit_ClientAddr->text() );
+}
+
+void MainWindow::on_pushButton_specialDisplay_clicked()
+{
+    socket.sendSpecialDisplay( ui->lineEdit_ClientAddr->text(), ui->lineEdit_screenMessage->text(), ui->comboBox_screenType->currentIndex() + 1);
+}
+
+void MainWindow::on_pushButton_scan_clicked()
+{
+    socket.sendScan(ui->lineEdit_ClientAddr->text(), ui->comboBox_scanType->currentIndex() +1, ui->spinBox_scanTime->value() );
+}
+
+void MainWindow::on_pushButton_DisableDisplay_clicked()
+{
+    socket.sendDisableDisplay( ui->lineEdit_ClientAddr->text(), ui->comboBox_DisDisplayType->currentIndex() + 1 );
+}

@@ -37,10 +37,15 @@ public:
     void abortSocketConnection();
     void sendHeartBeatPackage();
     bool establishConnection();
+    void setHostIp(const QString &ip);
     void sendQueryConfiguration();
     void sendSetConfiguration();
     void sendQueryClientInfo( const QString &clientAddr );
-    void setHostIp(const QString &ip);
+    void sendDisplayToClient( const QString &clientAddr );
+    void sendDisplayConfiguration(const QString &clientAddr);
+    void sendSpecialDisplay(const QString &clientAddr, const QString &screenMessage, int screenType);
+    void sendScan(const QString &clientAddr, int scanType, int scanTime);
+    void sendDisableDisplay(const QString &clientAddr, int typeD );
 signals:
 
 public slots:
@@ -53,6 +58,7 @@ public slots:
     void handleCurrentConfiguration(int reactionTimeOut, int charTimeOut, int pauseTime, int scanRate, int checkPollRate, int connectionRepeats);
     void handleDeliverClientInfo(const QString &clientAddr, ClientStates state );
     void handleStatusOk();
+    void handleScannedMessage( ScanType type, BarcodeState state, const QString &scanedData );
 private:
 
     QByteArray halfPackage;             ///<

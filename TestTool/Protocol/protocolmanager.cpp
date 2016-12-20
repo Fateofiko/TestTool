@@ -62,6 +62,30 @@ void ProtocolManager::appendSOH(QByteArray &command, bool append)
         command.append( SOH );
 }
 
+bool ProtocolManager::isDataContainsCommand(const QByteArray &command)
+{
+    switch( (int) command.at(0) ){
+        case TERMINAL_CLIENT_SET_CONFIGURATION             :;
+        case TERMINAL_CLIENT_DATA_TO_CLIENT                :;
+        case TERMINAL_CLIENT_QUERY_CLIENT_INFO             :;
+        case CLIENT_TERMINAL_SEND_CONFIGURATION            :;
+        case CLIENT_TERMINAL_INFO                          :;
+        case CLIENT_TERMINAL_DATA_FROM_CLIENT              :;
+        case TERMINAL_DISPLAY_CHANGE_DEVICE_STATE          :;
+        case TERMINAL_DISPLAY_SPECIAL_DISPLAY              :;
+        case TERMINAL_DISPLAY_SCAN                         :;
+        case TERMINAL_DISPLAY_DISABLE_DISPLAY              :;
+        case DISPLAY_TERMINAL_KEY_MESSAGE                  :;
+        case DISPLAY_TERMINAL_SCANNED_MESSAGE              :;
+        case HOST_CLIENT_RESET                             :;
+        case CLIENT_HOST_NEW_RESTART                       :;
+        case CLIENT_HOST_RESET_DONE                        :;
+        case CLIENT_HOST_ERROR_MESSAGE                     :return true; break;
+
+        default: /*qDebug()<<"There is just a message!";*/ return false;
+    }
+}
+
 void ProtocolManager::appendIntToCommand(QByteArray &command, int value, int numberOfBytes, int maxValue, int minValue, int defaultValue)
 {
     QString valueStr = "";
@@ -141,18 +165,18 @@ bool ProtocolManager::executeCommands(QList<QByteArray> &commands)
                     //To Do emit QUERY_CONFIGURATION
                     qDebug()<<"QUERY_CONFIGURATION";
                     execCommand_QueryConfiguration(nextCommand);
-                } else if( nextCommand.size() == 6 ){
-                    //To Do emit TERMINAL_DISPLAY_SET_CONFIGURATION_TO_DISPLAY
-                    qDebug()<<"TERMINAL_DISPLAY_SET_CONFIGURATION_TO_DISPLAY";
-                    execCommand_DisplaySetConf(nextCommand);
-                } else {
+                } else if( nextCommand.size() == 25 ){
                     //To Do emit TERMINAL_CLIENT_SET_CONFIGURATION
                     qDebug()<<"TERMINAL_CLIENT_SET_CONFIGURATION";
                     execCommand_SetConfiguration(nextCommand);
+                } else {
+                    //To Do emit TERMINAL_DISPLAY_SET_CONFIGURATION_TO_DISPLAY
+                    qDebug()<<"TERMINAL_DISPLAY_SET_CONFIGURATION_TO_DISPLAY";
+                    execCommand_DisplaySetConf(nextCommand);
                 }
             break;
             case TERMINAL_CLIENT_DATA_TO_CLIENT                :
-                qDebug()<<"TERMINAL_CLIENT_DATA_TO_CLIENT";
+                //qDebug()<<"TERMINAL_CLIENT_DATA_TO_CLIENT";
                 execCommand_DTC(nextCommand);
             break;
             case TERMINAL_CLIENT_QUERY_CLIENT_INFO             :
@@ -168,7 +192,7 @@ bool ProtocolManager::executeCommands(QList<QByteArray> &commands)
                 execCommand_ClientInfo(nextCommand);
             break;
             case CLIENT_TERMINAL_DATA_FROM_CLIENT              :
-                qDebug()<<"CLIENT_TERMINAL_DATA_FROM_CLIENT";
+                //qDebug()<<"CLIENT_TERMINAL_DATA_FROM_CLIENT";
                 execCommand_DFC( nextCommand );
             break;
             case TERMINAL_DISPLAY_CHANGE_DEVICE_STATE          :
@@ -321,11 +345,20 @@ bool ProtocolManager::isPackageContainsSecondAddr(const QByteArray &package)
     int cmd = getPackageFirstCommand(package);
     switch( cmd ){
         case TERMINAL_CLIENT_DATA_TO_CLIENT     :;
-        case TERMINAL_CLIENT_QUERY_CLIENT_INFO  :;
-        case CLIENT_TERMINAL_INFO               :;
+//        case TERMINAL_CLIENT_QUERY_CLIENT_INFO  :;
+//        case CLIENT_TERMINAL_INFO               :;
         case CLIENT_TERMINAL_DATA_FROM_CLIENT   :return true; break;
         default: return false;
     }
+}
+
+bool ProtocolManager::isPackageContainsCustomCmd(const QByteArray &package)
+{
+    QString data = getDataArrayFromEncodedPackage( package, 0, 9 );
+    if(data.contains(CMD))
+        return true;
+    else
+        return false;
 }
 
 int ProtocolManager::getPackageFirstCommand(const QByteArray &package)
@@ -495,17 +528,18 @@ bool ProtocolManager::insertCommand_ClientInfo(QByteArray &package, QString clie
 }
 
 // DISPLAY COMMANDS
-void ProtocolManager::insertCommand_DisplaySetConf(QByteArray &package, Key key, KeyState keyState, int ledBlinkTime, int displayBlinkTime, bool includeSOH)
+void ProtocolManager::insertCommand_DisplaySetConf(QByteArray &package, QList<KeyState> keysState, int ledBlinkTime, int displayBlinkTime, bool includeSOH)
 {
     QByteArray command;
     appendSOH( command, includeSOH );
     char set = TERMINAL_CLIENT_SET_CONFIGURATION;
     command.append( set );
 
-    char k = (int) key;
-    command.append(k);
-    char ks = (int) keyState;
-    command.append(ks);
+    for( int i = 0; i < keysState.size(); i++){
+        char ks = (int) keysState.at(i);
+        command.append(ks);
+    }
+
     appendIntToCommand(command, ledBlinkTime, 2, 99, 0, 0 );
     appendIntToCommand(command, displayBlinkTime, 2, 99, 0, 0 );
 
@@ -731,7 +765,7 @@ void ProtocolManager::execCommand_DFC(const QByteArray &command)
     char cmd = command.at(0);
     QString addr = QString( command.mid( 1, 4 ) );
     QString textData = QString( command.mid( 5, command.size() - 5 ) );
-    qDebug() << cmd << addr << textData ;
+    //qDebug() << cmd << addr << textData ;
     emit executed_DFC( addr, textData );
 }
 
@@ -743,9 +777,18 @@ void ProtocolManager::execCommand_DTC(const QByteArray &command)
     }
     char cmd = command.at(0);
     QString addr = QString( command.mid( 1, 4 ) );
-    QString textData = QString( command.mid( 5, command.size() - 5 ) );
-    qDebug() << cmd << addr << textData ;
-    emit executed_DTC( addr, textData );
+    QByteArray data = command.mid( 5, command.size() - 5 );
+
+    QString textData = QString(data);
+    //qDebug() << cmd << addr << textData ;
+
+    if( isDataContainsCommand( data ) ){
+        QList<QByteArray> commands;
+        commands.append(data);
+        executeCommands(commands);
+    } else {
+        emit executed_DTC( addr, textData );
+    }
 }
 
 void ProtocolManager::execCommand_SetConfiguration(const QByteArray &command)
@@ -807,7 +850,7 @@ void ProtocolManager::execCommand_CurrentConfiguration(const QByteArray &command
     QString pp = QString( command.mid( 11, 5 ) );
     QString sr = QString( command.mid( 16, 3 ) );
     QString cpr = QString( command.mid( 19, 3 ) );
-    QString mr = QString( command.mid( 21, 3) );
+    QString mr = QString( command.mid( 22, 3) );
     qDebug() << cmd << rto << cto<< pp<< sr<< cpr<< mr;
     emit executed_CurrentConfiguration( rto.toInt(), cto.toInt(), pp.toInt(), sr.toInt(), cpr.toInt(), mr.toInt() );
 }
@@ -836,16 +879,18 @@ void ProtocolManager::execCommand_DisplaySetConf(const QByteArray &command)
     }
     char cmd = command.at(0);
 
-    char k = command.at(1);
-    Key key = static_cast<Key>( ( (int) k ) );
-    char ks = command.at(2);
-    KeyState keyS = static_cast<KeyState>( ( (int) ks ) );
+    QString lbt = QString( command.mid( command.size() - 4, 2 ) );
+    QString dbt = QString( command.mid( command.size() - 2, 2 ) );
 
-    QString lbt = QString( command.mid( 3, 2 ) );
-    QString dbt = QString( command.mid( 5, 2 ) );
+    QByteArray buttonsStatus = command.mid( 1, command.size() - 5 );
+    QList< KeyState > keysStatus;
+    for( int i = 0; i < buttonsStatus.size(); i++ ){
+        char ks = buttonsStatus.at(i);
+        keysStatus << static_cast<KeyState>( ( (int) ks ) );
+    }
 
-    qDebug() << cmd << k << ks << lbt << dbt;
-    emit executed_DisplaySetConf( key, keyS, lbt.toInt(), dbt.toInt() );
+    qDebug() << cmd << lbt << dbt;
+    emit executed_DisplaySetConf( keysStatus, lbt.toInt(), dbt.toInt() );
 }
 
 void ProtocolManager::execCommand_Display(const QByteArray &command)
@@ -856,7 +901,7 @@ void ProtocolManager::execCommand_Display(const QByteArray &command)
     }
     char cmd = command.at(0);
 
-    char t = command.at(1); //Not used type
+//    char t = command.at(1); //Not used type
     //Get the length of data
     QString dataLength = QString( command.mid( 2, 2 ));
     int length = dataLength.toInt();
@@ -866,12 +911,12 @@ void ProtocolManager::execCommand_Display(const QByteArray &command)
     QString dpMode = QString( command.mid( ( 4 + ( 2 * length ) ), length ));
     int lastDataCharPosition = ( 4 + ( 3 * length ) )  - 1;
 
-    char iRed = command.at( lastDataCharPosition + 1 );
-    LightMode iRedMode = static_cast<LightMode>( ( (int) iRed ) );
-    char iGreen = command.at(lastDataCharPosition + 2);
-    LightMode iGreenMode = static_cast<LightMode>( ( (int) iGreen ) );
-    char iBlue = command.at(lastDataCharPosition + 3);
-    LightMode iBlueMode = static_cast<LightMode>( ( (int) iBlue ) );
+    char lRed = command.at( lastDataCharPosition + 1 );
+    LightMode lRedMode = static_cast<LightMode>( ( (int) lRed ) );
+    char lGreen = command.at(lastDataCharPosition + 2);
+    LightMode lGreenMode = static_cast<LightMode>( ( (int) lGreen ) );
+    char lBlue = command.at(lastDataCharPosition + 3);
+    LightMode lBlueMode = static_cast<LightMode>( ( (int) lBlue ) );
 
     char eRed = command.at(lastDataCharPosition + 4);
     LightMode eRedMode = static_cast<LightMode>( ( (int) eRed ) );
@@ -888,8 +933,8 @@ void ProtocolManager::execCommand_Display(const QByteArray &command)
     char zc = command.at(lastDataCharPosition + 9);
     LightMode zcMode = static_cast<LightMode>( ( (int) zc ) );
 
-    qDebug() << cmd << data << dMode << dpMode << iRed << iGreen << iBlue << eRed << eGreen << eBlue << dwn << up << zc ;
-    emit executed_Display( data, eRedMode, eGreenMode, eBlueMode );
+    qDebug() << cmd << data << dMode << dpMode << lRed << lGreen << lBlue << eRed << eGreen << eBlue << dwn << up << zc ;
+    emit executed_Display( data, dMode, dpMode, lRedMode, lGreenMode, lBlueMode, eRedMode, eGreenMode, eBlueMode, dwnMode, upMode, zcMode );
 }
 
 void ProtocolManager::execCommand_SpecialDisplay(const QByteArray &command)

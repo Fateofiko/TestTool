@@ -656,18 +656,20 @@ void ProtocolManager::insertCommand_DisableDisplay(QByteArray &package, DisplayM
     package.insert( ( package.size() - APPEND_NEXT_COMMAND_PACKAGE_POSITION ), command );
 }
 
-void ProtocolManager::insertCommand_KeyMessage(QByteArray &package, Key key, KeyState state, bool includeSOH)
+void ProtocolManager::insertCommand_KeyMessage(QByteArray &package, QList< KeyState > state, int keyTime, int timeSince, bool includeSOH)
 {
     QByteArray command;
     appendSOH( command, includeSOH );
     char keyMessage = DISPLAY_TERMINAL_KEY_MESSAGE;
     command.append( keyMessage );
 
-    char k = (int) key;
-    command.append(k);
+    for(int i = 0; i < state.size(); i++){
+        char st = (int) state.at(i);
+        command.append(st);
+    }
 
-    char st = (int) state;
-    command.append(st);
+    appendIntToCommand(command, keyTime, 3, 999, 1, 15);
+    appendIntToCommand(command, timeSince, 3, 999, 1, 15);
 
     encodeCommand( command );
     package.insert( ( package.size() - APPEND_NEXT_COMMAND_PACKAGE_POSITION ), command );
@@ -1008,19 +1010,24 @@ void ProtocolManager::execCommand_DisableDisplay(const QByteArray &command)
 
 void ProtocolManager::execCommand_KeyMessage(const QByteArray &command)
 {
-    if(command.length() < 3) {
+    if(command.length() < 7) {
         qWarning() << "execCommand_KeyMessage() - Not a valid command length!";
         return;
     }
     char cmd = command.at(0);
 
-    char k = command.at(1);
-    Key key = static_cast<Key>( ( (int) k ) );
-    char ks = command.at(2);
-    KeyState keyS = static_cast<KeyState>( ( (int) ks ) );
+    int timeSince = QString( command.mid( ( command.size() - 1 ) - 3, 3) ).toInt();
+    int keyTime = QString( command.mid( ( command.size() - 1 ) - 6, 3) ).toInt();
+    QByteArray keyStates;
+    keyStates.append( command.mid(  1, ( command.size() - 7)  ) );
+    QList<KeyState> keyStatusList;
+    for(int i = 0; i< keyStates.size(); i++){
+        char ks = command.at(2);
+        keyStatusList.append( static_cast<KeyState>( ( (int) ks ) ) );
+    }
 
-    qDebug() << cmd << k << ks ;
-    emit executed_KeyMessage( key, keyS );
+    qDebug() << cmd << keyTime << timeSince ;
+    emit executed_KeyMessage( keyStatusList, keyTime, timeSince );
 }
 
 void ProtocolManager::execCommand_ScannedMessage(const QByteArray &command)

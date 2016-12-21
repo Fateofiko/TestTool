@@ -561,7 +561,7 @@ public:
      * @see execCommand_KeyMessage()
      * @see executed_KeyMessage()
      */
-    void insertCommand_KeyMessage( QByteArray &package, Key key, KeyState state, bool includeSOH ); //To do ask about the command
+    void insertCommand_KeyMessage(QByteArray &package, QList<KeyState> state, int keyTime, int timeSince, bool includeSOH ); //To do ask about the command
 
     /**
      * @brief Constructs and inserts "Scanned message" command into a package.
@@ -1034,7 +1034,7 @@ signals:
      * @see execCommand_KeyMessage()
      * @see insertCommand_KeyMessage()
      */
-    void executed_KeyMessage( Key key, KeyState state );
+    void executed_KeyMessage( QList< KeyState > state, int keyTime, int timeSince );
 
     /**
      * @brief Signal is emmited when "Scanned message" command is received.

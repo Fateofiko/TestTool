@@ -29,12 +29,12 @@ ClientSocket::~ClientSocket()
 
 void ClientSocket::timerEvent(QTimerEvent *event)
 {
-    if( tcpSocket && tcpSocket->state() != 0 ){
-        if( counterHeartbeatDrops == MAX_HEARTBEAT_DROPS )
-            tcpSocket->abort();
-        else
-            counterHeartbeatDrops ++;
-    }
+//    if( tcpSocket && tcpSocket->state() != 0 ){
+//        if( counterHeartbeatDrops == MAX_HEARTBEAT_DROPS )
+//            tcpSocket->abort();
+//        else
+//            counterHeartbeatDrops ++;
+//    }
 }
 
 void ClientSocket::sendHeartBeatPackage()
@@ -185,10 +185,10 @@ void ClientSocket::manageBufferedData(QByteArray &buffer)
 
 void ClientSocket::dataToClient( const QString &addr, const QString &data )
 {
-//    qDebug() << data << addr;
-    if( data.contains( DATA_CMD_HEARTBEAT ) ){
-        sendHeartBeatPackage();
-    }
+    qDebug() << data << addr;
+//    if( data.contains( DATA_CMD_HEARTBEAT ) ){
+//        sendHeartBeatPackage();
+//    }
 
 //    QByteArray package;
 //    protocolManager.createStatusPackage( package, OK );

@@ -35,6 +35,10 @@ void ClientSocket::timerEvent(QTimerEvent *event)
 //        else
 //            counterHeartbeatDrops ++;
 //    }
+    QByteArray package;
+    protocolManager.setProtocolAddress( QString::number( hostId!=0 ? hostId : HOST_ID ) );
+    protocolManager.createEmptyPackage( package );
+    tcpSocket->write(package);
 }
 
 void ClientSocket::sendHeartBeatPackage()

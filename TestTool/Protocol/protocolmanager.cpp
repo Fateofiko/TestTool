@@ -917,7 +917,7 @@ void ProtocolManager::execCommand_DisplaySetConf(const QByteArray &command)
 
 void ProtocolManager::execCommand_Display(const QByteArray &command)
 {
-    if(command.length() < 15) {
+    if(command.length() < 13) {
         qWarning() << "execCommand_Display() - Not a valid command length!";
         return;
     }

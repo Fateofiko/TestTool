@@ -14,6 +14,7 @@
 #define STX 0x02            ///< Start byte
 #define ETX 0x03            ///< Termination byte
 #define EOT 0x04            ///< End of transmission byte
+#define ENQ 0x05            ///< Enquiry
 #define ENCODING_STEP 0x40  ///< Encoding the characters in the data field of the protocol
 #define APPEND_NEXT_COMMAND_PACKAGE_POSITION 4  ///< Append next command at the end of the package
 #define RUNNING_NUMBER_POSITION 5               ///< Position of running number field

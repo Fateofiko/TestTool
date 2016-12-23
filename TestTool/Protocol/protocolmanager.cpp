@@ -138,9 +138,13 @@ void ProtocolManager::encodeCommand( QByteArray &command )
 {
     //ENCODE every single char by inclementing his value with 40h
     for(int i=0; i < command.size();i++){
-        char single = (int) command.at(i) + ENCODING_STEP;
-        command.remove(i,1);
-        command.insert(i,single);
+        if( (int) command.at(i) <= (int) ENQ ){
+            char single = (int) command.at(i) + ENCODING_STEP;
+            command.remove(i,1);
+            command.insert(i, ENQ);
+            command.insert(i+1,single);
+            i++;
+        }
     }
 }
 
@@ -148,9 +152,11 @@ void ProtocolManager::decodeCommand(QByteArray &command)
 {
     //DECODE every single char by decrease his value with 40h
     for(int i=0; i < command.size();i++){
-        char single = (int) command.at(i) - ENCODING_STEP;
-        command.remove(i,1);
-        command.insert(i,single);
+        if( (int) command.at(i) == (int) ENQ ){
+            char single = (int) command.at( i+1 ) - ENCODING_STEP;
+            command.remove(i,2);
+            command.insert(i,single);
+        }
     }
 }
 
@@ -312,10 +318,18 @@ bool ProtocolManager::parsePackage( const QByteArray &package)
         if( package.contains( TYPE ) ){
             dataStart = package.indexOf( TYPE );
             dataEND = package.indexOf( EOT )-1;
+            if( dataStart != 6 ){
+                qDebug() << "The position of field type is not correct. There is an error in the package frame.";
+                return false;
+            }
         } else {
             dataStart = RUNNING_NUMBER_POSITION;
             dataEND = package.indexOf( EOT )-1;
             isStatusPackage = true;
+            if( package.size() != 11){
+                qDebug() << "There is an error in the package frame.";
+                return false;
+            }
         }
         this->receivedPackageAddress = package.mid( ADDRESS_START_POSITION, ADDRESS_LENGTH );
         this->receivedPackageRunningNumber = package.at( RUNNING_NUMBER_POSITION );

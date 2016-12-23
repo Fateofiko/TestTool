@@ -334,6 +334,12 @@ bool ProtocolManager::parsePackage( const QByteArray &package)
         this->receivedPackageAddress = package.mid( ADDRESS_START_POSITION, ADDRESS_LENGTH );
         this->receivedPackageRunningNumber = package.at( RUNNING_NUMBER_POSITION );
         dataArray = package.mid( dataStart + 1, dataEND - dataStart );
+        if( dataArray.isEmpty() ){
+            qDebug() << "The package is empty with no data field.";
+            emit emptyPackageReceived();
+            return true;
+        }
+
     }
 
     if( !isStatusPackage ){

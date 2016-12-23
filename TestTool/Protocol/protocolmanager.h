@@ -1109,6 +1109,8 @@ signals:
      * @brief
      */
     void statusRunningNumberError();
+
+    void emptyPackageReceived();
 //=====================================================================
 public slots:
 };

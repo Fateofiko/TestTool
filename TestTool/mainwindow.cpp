@@ -46,7 +46,13 @@ void MainWindow::on_pushButton_SetHost_clicked()
 
 void MainWindow::on_pushButton_displayToClient_clicked()
 {
-    socket.sendDisplayToClient( ui->lineEdit_ClientAddr->text() );
+    QString number = ui->lineEdit_BoxCount->text();
+    if( number.isEmpty() ){
+        number = " 0";
+    } else if( number.size() == 1 ){
+        number.prepend(' ');
+    }
+    socket.sendDisplayToClient( ui->lineEdit_ClientAddr->text(), number );
 }
 
 void MainWindow::on_pushButton_displayConf_clicked()

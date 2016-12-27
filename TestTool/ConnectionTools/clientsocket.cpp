@@ -3,7 +3,7 @@
 ClientSocket::ClientSocket(QObject *parent) : QObject(parent)
 {
     createSocket();
-    startTimer( 5000 );
+    startTimer( 50000 );
     counterHeartbeatDrops = 0;
     autoRestart = true;
     hostIp = "";
@@ -279,12 +279,12 @@ void ClientSocket::sendQueryClientInfo(const QString &clientAddr)
     tcpSocket->write(package);
 }
 
-void ClientSocket::sendDisplayToClient(const QString &clientAddr)
+void ClientSocket::sendDisplayToClient(const QString &clientAddr, const QString &boxCount )
 {
     QByteArray package;
     protocolManager.setProtocolAddress( QString::number( hostId!=0 ? hostId : HOST_ID ) );
     protocolManager.createEmptyPackage( package );
-    protocolManager.insertCommand_DTC(package,QString("E002uuiioo123010000"),clientAddr,false);
+    protocolManager.insertCommand_DTC(package,QString("E002%1iioo123010000").arg( boxCount ),clientAddr,false);
     tcpSocket->write(package);
 }
 

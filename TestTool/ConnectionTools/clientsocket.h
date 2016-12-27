@@ -41,7 +41,7 @@ public:
     void sendQueryConfiguration();
     void sendSetConfiguration();
     void sendQueryClientInfo( const QString &clientAddr );
-    void sendDisplayToClient( const QString &clientAddr );
+    void sendDisplayToClient(const QString &clientAddr , const QString &boxCount);
     void sendDisplayConfiguration(const QString &clientAddr);
     void sendSpecialDisplay(const QString &clientAddr, const QString &screenMessage, int screenType);
     void sendScan(const QString &clientAddr, int scanType, int scanTime);

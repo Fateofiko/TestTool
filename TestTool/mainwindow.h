@@ -40,6 +40,10 @@ private slots:
 
     void on_pushButton_DisableDisplay_clicked();
 
+    void on_pushButton_ClientReset_clicked();
+
+    void on_pushButton_HostReset_clicked();
+
 private:
     Ui::MainWindow *ui;
     ClientSocket socket;

@@ -299,6 +299,15 @@ void ProtocolManager::turnValueToDots( QString &value , int numberOfDots )
 
 }
 
+void ProtocolManager::insertCommandToPackage(QByteArray &package, const QByteArray &command)
+{
+    if( package.isEmpty() ){
+        package.append( command );
+    } else if( package.size() >= PACKAGE_EMPTY_FRAME_SIZE ){
+        package.insert( ( package.size() - APPEND_NEXT_COMMAND_PACKAGE_POSITION ), command );
+    }
+}
+
 void ProtocolManager::createEmptyPackage( QByteArray &package )
 {
     package.clear();
@@ -436,7 +445,7 @@ bool ProtocolManager::insertCommand_DFC( QByteArray &package, const QString &dat
     }
     encodeCommand( command );
 
-    package.insert( ( package.size() - APPEND_NEXT_COMMAND_PACKAGE_POSITION ), command );
+    insertCommandToPackage( package, command );
     return true;
 }
 
@@ -460,7 +469,7 @@ bool ProtocolManager::insertCommand_DTC( QByteArray &package, const QString &dat
     }
     encodeCommand( command );
 
-    package.insert( ( package.size() - APPEND_NEXT_COMMAND_PACKAGE_POSITION ), command );
+    insertCommandToPackage( package, command );
     return true;
 }
 
@@ -480,7 +489,7 @@ void ProtocolManager::insertCommand_SetConfiguration(QByteArray &package, int re
     appendIntToCommand( command, connectionRepeats, 3, 255, 0, 10 );
 
     encodeCommand( command );
-    package.insert( ( package.size() - APPEND_NEXT_COMMAND_PACKAGE_POSITION ), command );
+    insertCommandToPackage( package, command );
 }
 
 void ProtocolManager::insertCommand_QueryConfiguration(QByteArray &package, bool includeSOH)
@@ -491,7 +500,7 @@ void ProtocolManager::insertCommand_QueryConfiguration(QByteArray &package, bool
     command.append( queryConf );
     command.append('?');
     encodeCommand( command );
-    package.insert( ( package.size() - APPEND_NEXT_COMMAND_PACKAGE_POSITION ), command );
+    insertCommandToPackage( package, command );
 }
 
 bool ProtocolManager::insertCommand_QueryClientInfo(QByteArray &package, QString clientAddr, bool includeSOH)
@@ -506,7 +515,7 @@ bool ProtocolManager::insertCommand_QueryClientInfo(QByteArray &package, QString
     appendStrToCommand( command, clientAddr, 4 );
 
     encodeCommand( command );
-    package.insert( ( package.size() - APPEND_NEXT_COMMAND_PACKAGE_POSITION ), command );
+    insertCommandToPackage( package, command );
     return true;
 }
 
@@ -526,7 +535,7 @@ void ProtocolManager::insertCommand_CurrentConfiguration(QByteArray &package, in
     appendIntToCommand( command, connectionRepeats, 3, 255, 0, 10 );
 
     encodeCommand( command );
-    package.insert( ( package.size() - APPEND_NEXT_COMMAND_PACKAGE_POSITION ), command );
+    insertCommandToPackage( package, command );
 }
 
 bool ProtocolManager::insertCommand_ClientInfo(QByteArray &package, QString clientAddr, ClientStates state, bool includeSOH)
@@ -543,7 +552,7 @@ bool ProtocolManager::insertCommand_ClientInfo(QByteArray &package, QString clie
     command.append( st );
 
     encodeCommand( command );
-    package.insert( ( package.size() - APPEND_NEXT_COMMAND_PACKAGE_POSITION ), command );
+    insertCommandToPackage( package, command );
     return true;
 }
 
@@ -564,7 +573,7 @@ void ProtocolManager::insertCommand_DisplaySetConf(QByteArray &package, QList<Ke
     appendIntToCommand(command, displayBlinkTime, 2, 99, 0, 0 );
 
     encodeCommand( command );
-    package.insert( ( package.size() - APPEND_NEXT_COMMAND_PACKAGE_POSITION ), command );
+    insertCommandToPackage( package, command );
 }
 
 bool ProtocolManager::insertCommand_Display(QByteArray &package, int lengthOfData, const QString &data, LightMode elModeRed, LightMode elModeGreen, LightMode elModeBlue, bool includeSOH)
@@ -605,7 +614,7 @@ bool ProtocolManager::insertCommand_Display(QByteArray &package, int lengthOfDat
     appendDotsToCommand( command, 1 ); //Save bytes for ZC
 
     encodeCommand( command );
-    package.insert( ( package.size() - APPEND_NEXT_COMMAND_PACKAGE_POSITION ), command );
+    insertCommandToPackage( package, command );
     return true;
 }
 
@@ -644,7 +653,7 @@ void ProtocolManager::insertCommand_SpecialDisplay(QByteArray &package, SpecialD
     command.append(u);
 
     encodeCommand( command );
-    package.insert( ( package.size() - APPEND_NEXT_COMMAND_PACKAGE_POSITION ), command );
+    insertCommandToPackage( package, command );
 }
 
 void ProtocolManager::insertCommand_Scan(QByteArray &package, ScanType type, int scanningTime, bool includeSOH)
@@ -659,7 +668,7 @@ void ProtocolManager::insertCommand_Scan(QByteArray &package, ScanType type, int
     appendIntToCommand(command, scanningTime, 3, 999, 0, 0 );
 
     encodeCommand( command );
-    package.insert( ( package.size() - APPEND_NEXT_COMMAND_PACKAGE_POSITION ), command );
+    insertCommandToPackage( package, command );
 }
 
 void ProtocolManager::insertCommand_DisableDisplay(QByteArray &package, DisplayMode mode, bool includeSOH)
@@ -673,7 +682,7 @@ void ProtocolManager::insertCommand_DisableDisplay(QByteArray &package, DisplayM
     command.append(m);
 
     encodeCommand( command );
-    package.insert( ( package.size() - APPEND_NEXT_COMMAND_PACKAGE_POSITION ), command );
+    insertCommandToPackage( package, command );
 }
 
 void ProtocolManager::insertCommand_KeyMessage(QByteArray &package, QList< KeyState > state, int keyTime, int timeSince, bool includeSOH)
@@ -692,7 +701,7 @@ void ProtocolManager::insertCommand_KeyMessage(QByteArray &package, QList< KeySt
     appendIntToCommand(command, timeSince, 3, 999, 1, 15);
 
     encodeCommand( command );
-    package.insert( ( package.size() - APPEND_NEXT_COMMAND_PACKAGE_POSITION ), command );
+    insertCommandToPackage( package, command );
 }
 
 void ProtocolManager::insertCommand_ScannedMessage(QByteArray &package, ScanType type, BarcodeState state, const QString &scannedData, bool includeSOH)
@@ -711,7 +720,7 @@ void ProtocolManager::insertCommand_ScannedMessage(QByteArray &package, ScanType
     appendStrToCommand( command, scannedData );
 
     encodeCommand( command );
-    package.insert( ( package.size() - APPEND_NEXT_COMMAND_PACKAGE_POSITION ), command );
+    insertCommandToPackage( package, command );
 }
 
 // CLIENT COMMANDS
@@ -726,7 +735,7 @@ void ProtocolManager::insertCommand_ClientReset(QByteArray &package, ClientReset
     command.append(st);
 
     encodeCommand( command );
-    package.insert( ( package.size() - APPEND_NEXT_COMMAND_PACKAGE_POSITION ), command );
+    insertCommandToPackage( package, command );
 }
 
 void ProtocolManager::insertCommand_ClientNewRestart(QByteArray &package, ClientNewRestartStates state, bool includeSOH)
@@ -740,22 +749,25 @@ void ProtocolManager::insertCommand_ClientNewRestart(QByteArray &package, Client
     command.append(st);
 
     encodeCommand( command );
-    package.insert( ( package.size() - APPEND_NEXT_COMMAND_PACKAGE_POSITION ), command );
+    insertCommandToPackage( package, command );
 }
 
-void ProtocolManager::insertCommand_ClientResetDone(QByteArray &package, int hardwareV, int softwareV, QString &clientId, bool includeSOH)
+void ProtocolManager::insertCommand_ClientResetDone(QByteArray &package, QString hardwareV, QString softwareV, QString clientId, bool includeSOH)
 {
     QByteArray command;
     appendSOH( command, includeSOH );
     char resetDone = CLIENT_HOST_RESET_DONE;
     command.append( resetDone );
 
-    appendIntToCommand( command, hardwareV, 2, 99, 0, 0 );
-    appendIntToCommand( command, softwareV, 2, 99, 0, 0 );
-    appendStrToCommand( command, clientId, 8 );
+    appendStrToCommand( command, hardwareV, 2 );
+    command.append( "00" );
+    appendStrToCommand( command, softwareV, 2 );
+    command.append( "00" );
+    appendStrToCommand( command, clientId, 4 );
+    command.append( "0000" );
 
     encodeCommand( command );
-    package.insert( ( package.size() - APPEND_NEXT_COMMAND_PACKAGE_POSITION ), command );
+    insertCommandToPackage( package, command );
 }
 
 void ProtocolManager::insertCommand_ClientErrorMessage(QByteArray &package, int errorNumber, int errorSpecs, bool includeSOH)
@@ -766,10 +778,11 @@ void ProtocolManager::insertCommand_ClientErrorMessage(QByteArray &package, int 
     command.append( errorMessage );
 
     appendIntToCommand( command, errorNumber, 2, 99, 0, 0 );
-    appendIntToCommand( command, errorSpecs, 2, 99, 0, 0 );;
+    appendIntToCommand( command, errorSpecs, 2, 99, 0, 0 );
 
     encodeCommand( command );
-    package.insert( ( package.size() - APPEND_NEXT_COMMAND_PACKAGE_POSITION ), command );
+
+    insertCommandToPackage( package, command );
 }
 
 
@@ -786,9 +799,18 @@ void ProtocolManager::execCommand_DFC(const QByteArray &command)
     }
     char cmd = command.at(0);
     QString addr = QString( command.mid( 1, 4 ) );
-    QString textData = QString( command.mid( 5, command.size() - 5 ) );
+    QByteArray data = command.mid( 5, command.size() - 5 );
+
+    QString textData = QString( data );
     //qDebug() << cmd << addr << textData ;
-    emit executed_DFC( addr, textData );
+
+    if( isDataContainsCommand( data ) ){
+        QList<QByteArray> commands;
+        commands.append(data);
+        executeCommands(commands);
+    } else {
+        emit executed_DFC( addr, textData );
+    }
 }
 
 void ProtocolManager::execCommand_DTC(const QByteArray &command)
@@ -927,6 +949,10 @@ void ProtocolManager::execCommand_Display(const QByteArray &command)
     //Get the length of data
     QString dataLength = QString( command.mid( 2, 2 ));
     int length = dataLength.toInt();
+    if(command.length() < (13 + ( length*3 ) ) ) {
+        qWarning() << "execCommand_Display() - Not a valid command length!";
+        return;
+    }
 
     QString data = QString( command.mid( 4, length ));
     QString dMode = QString( command.mid( ( 4 + length ), length ));
@@ -1099,16 +1125,16 @@ void ProtocolManager::execCommand_ClientNewRestart(const QByteArray &command)
 
 void ProtocolManager::execCommand_ClientResetDone(const QByteArray &command)
 {
-    if(command.length() < 13) {
+    if(command.length() < 17) {
         qWarning() << "execCommand_ClientResetDone() - Not a valid command length!";
         return;
     }
     char cmd = command.at(0);
-    QString hV = QString( command.mid( 1, 2 ) );
-    QString sV = QString( command.mid( 3, 2 ) );
-    QString id = QString( command.mid( 5, 8 ) );
+    QString hV = QString( command.mid( 1, 4 ) );
+    QString sV = QString( command.mid( 5, 4 ) );
+    QString id = QString( command.mid( 9, 8 ) );
     qDebug() << cmd << hV << sV << id ;
-    emit executed_ClientResetDone( hV.toInt(), sV.toInt(), id );
+    emit executed_ClientResetDone( hV, sV, id );
 }
 
 void ProtocolManager::execCommand_ClientErrorMessage(const QByteArray &command)

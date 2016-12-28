@@ -41,11 +41,13 @@ public:
     void sendQueryConfiguration();
     void sendSetConfiguration();
     void sendQueryClientInfo( const QString &clientAddr );
-    void sendDisplayToClient(const QString &clientAddr , const QString &boxCount);
+    void sendDisplayToClient(const QString &clientAddr , const QString &boxCount, bool red, bool green, bool blue);
     void sendDisplayConfiguration(const QString &clientAddr);
     void sendSpecialDisplay(const QString &clientAddr, const QString &screenMessage, int screenType);
     void sendScan(const QString &clientAddr, int scanType, int scanTime);
     void sendDisableDisplay(const QString &clientAddr, int typeD );
+    void sendClientReset( const QString &clientAddr );
+    void sendHostReset();
 signals:
 
 public slots:
@@ -59,6 +61,7 @@ public slots:
     void handleDeliverClientInfo(const QString &clientAddr, ClientStates state );
     void handleStatusOk();
     void handleScannedMessage( ScanType type, BarcodeState state, const QString &scanedData );
+    void handleClientResetDone( const QString &hardwareV, const QString &softwareV, const QString &clientId );
 private:
 
     QByteArray halfPackage;             ///<

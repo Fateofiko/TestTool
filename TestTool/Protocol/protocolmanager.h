@@ -20,6 +20,7 @@
 #define RUNNING_NUMBER_POSITION 5               ///< Position of running number field
 #define ADDRESS_START_POSITION 1                ///< Start position of IP address field
 #define ADDRESS_LENGTH 4                        ///< 4 bytes for IP address
+#define PACKAGE_EMPTY_FRAME_SIZE 11             ///< Empty package size
 
 //Custom text commands
 /**
@@ -611,7 +612,7 @@ public:
      * @see execCommand_ClientResetDone()
      * @see executed_ClientResetDone()
      */
-    void insertCommand_ClientResetDone(QByteArray &package, int hardwareV, int softwareV, QString &clientId, bool includeSOH );
+    void insertCommand_ClientResetDone(QByteArray &package, QString hardwareV, QString softwareV, QString clientId, bool includeSOH );
 
     /**
      * @brief Constructs and inserts "Client error message" command into a package.
@@ -724,6 +725,8 @@ private:
     void checkValueForDots( QString &value );
 
     void turnValueToDots(QString &value, int numberOfDots);
+
+    void insertCommandToPackage( QByteArray &package, const QByteArray &command );
 
     // TERMINAL COMMANDS
     /**
@@ -1076,7 +1079,7 @@ signals:
      * @see execCommand_ClientResetDone()
      * @see insertCommand_ClientResetDone()
      */
-    void executed_ClientResetDone( int hardwareV, int softwareV, const QString &clientId );
+    void executed_ClientResetDone( const QString &hardwareV, const QString &softwareV, const QString &clientId );
 
     /**
      * @brief Signal is emmited when "Client error message" command is received.

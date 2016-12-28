@@ -52,7 +52,7 @@ void MainWindow::on_pushButton_displayToClient_clicked()
     } else if( number.size() == 1 ){
         number.prepend(' ');
     }
-    socket.sendDisplayToClient( ui->lineEdit_ClientAddr->text(), number );
+    socket.sendDisplayToClient( ui->lineEdit_ClientAddr->text(), number, ui->checkBox_R->isChecked(), ui->checkBox_G->isChecked(), ui->checkBox_B->isChecked() );
 }
 
 void MainWindow::on_pushButton_displayConf_clicked()
@@ -73,4 +73,14 @@ void MainWindow::on_pushButton_scan_clicked()
 void MainWindow::on_pushButton_DisableDisplay_clicked()
 {
     socket.sendDisableDisplay( ui->lineEdit_ClientAddr->text(), ui->comboBox_DisDisplayType->currentIndex() + 1 );
+}
+
+void MainWindow::on_pushButton_ClientReset_clicked()
+{
+    socket.sendClientReset( ui->lineEdit_ClientAddr->text() );
+}
+
+void MainWindow::on_pushButton_HostReset_clicked()
+{
+    socket.sendHostReset();
 }

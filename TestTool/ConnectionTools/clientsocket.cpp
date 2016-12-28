@@ -15,6 +15,7 @@ ClientSocket::ClientSocket(QObject *parent) : QObject(parent)
     connect( &protocolManager, SIGNAL( executed_CurrentConfiguration(int,int,int,int,int,int)), this, SLOT( handleCurrentConfiguration(int,int,int,int,int,int)) );
     connect( &protocolManager, SIGNAL( executed_ClientInfo(QString,ClientStates)), this, SLOT( handleDeliverClientInfo(QString,ClientStates)) );
     connect( &protocolManager, SIGNAL( executed_ScannedMessage(ScanType,BarcodeState,QString)), this, SLOT( handleScannedMessage(ScanType,BarcodeState,QString) ) );
+    connect( &protocolManager, SIGNAL( executed_ClientResetDone(QString,QString,QString)), this, SLOT( handleClientResetDone(QString,QString,QString) ) );
 }
 
 ClientSocket::~ClientSocket()
@@ -252,6 +253,11 @@ void ClientSocket::handleScannedMessage(ScanType type, BarcodeState state, const
     qDebug()<<scanedData<< QString("  %1  %2  ").arg(scanType).arg(scanState);
 }
 
+void ClientSocket::handleClientResetDone(const QString &hardwareV, const QString &softwareV, const QString &clientId)
+{
+    qDebug()<<"ResetDone: "<<hardwareV;
+}
+
 void ClientSocket::sendQueryConfiguration()
 {
     QByteArray package;
@@ -279,12 +285,14 @@ void ClientSocket::sendQueryClientInfo(const QString &clientAddr)
     tcpSocket->write(package);
 }
 
-void ClientSocket::sendDisplayToClient(const QString &clientAddr, const QString &boxCount )
+void ClientSocket::sendDisplayToClient(const QString &clientAddr, const QString &boxCount, bool red, bool green, bool blue )
 {
     QByteArray package;
     protocolManager.setProtocolAddress( QString::number( hostId!=0 ? hostId : HOST_ID ) );
     protocolManager.createEmptyPackage( package );
-    protocolManager.insertCommand_DTC(package,QString("E002%1iioo123010000").arg( boxCount ),clientAddr,false);
+    QString colors = QString("%1%2%3").arg( red ? '1' : '0').arg( green ? '1' : '0').arg( blue ? '1' : '0');
+    colors.append("000");
+    protocolManager.insertCommand_DTC(package,QString("E002%1iioo123%2").arg( boxCount ).arg(colors), clientAddr, false);
     tcpSocket->write(package);
 }
 
@@ -347,6 +355,27 @@ void ClientSocket::sendDisableDisplay(const QString &clientAddr, int typeD)
     protocolManager.setProtocolAddress( QString::number( hostId!=0 ? hostId : HOST_ID ) );
     protocolManager.createEmptyPackage( package );
     protocolManager.insertCommand_DTC(package, QString("Z%1").arg(cT), clientAddr, false);
+    tcpSocket->write(package);
+}
+
+void ClientSocket::sendClientReset( const QString &clientAddr )
+{
+    QByteArray command;
+    protocolManager.insertCommand_ClientReset( command, CLIENT_NORMAL_OPERATION, false );
+
+    QByteArray package;
+    protocolManager.setProtocolAddress( QString::number( hostId!=0 ? hostId : HOST_ID ) );
+    protocolManager.createEmptyPackage( package );
+    protocolManager.insertCommand_DTC(package, QString(command), clientAddr, false);
+    tcpSocket->write(package);
+}
+
+void ClientSocket::sendHostReset()
+{
+    QByteArray package;
+    protocolManager.setProtocolAddress( QString::number( hostId!=0 ? hostId : HOST_ID ) );
+    protocolManager.createEmptyPackage( package );
+    protocolManager.insertCommand_ClientReset( package, CLIENT_NORMAL_OPERATION, false );
     tcpSocket->write(package);
 }
 

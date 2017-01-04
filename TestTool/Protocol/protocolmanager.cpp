@@ -1062,17 +1062,19 @@ void ProtocolManager::execCommand_KeyMessage(const QByteArray &command)
     }
     char cmd = command.at(0);
 
-    int timeSince = QString( command.mid( ( command.size() - 1 ) - 3, 3) ).toInt();
-    int keyTime = QString( command.mid( ( command.size() - 1 ) - 6, 3) ).toInt();
+    int timeSince = QString( command.mid( command.size() - 3, 3) ).toInt();
+    int keyTime = QString( command.mid( command.size() - 6, 3) ).toInt();
     QByteArray keyStates;
     keyStates.append( command.mid(  1, ( command.size() - 7)  ) );
     QList<KeyState> keyStatusList;
+    QString list = "";
     for(int i = 0; i< keyStates.size(); i++){
-        char ks = command.at(2);
+        char ks = keyStates.at(i);
+        list.append( ks );
         keyStatusList.append( static_cast<KeyState>( ( (int) ks ) ) );
     }
 
-    qDebug() << cmd << keyTime << timeSince ;
+    qDebug() << cmd << list << keyTime << timeSince ;
     emit executed_KeyMessage( keyStatusList, keyTime, timeSince );
 }
 

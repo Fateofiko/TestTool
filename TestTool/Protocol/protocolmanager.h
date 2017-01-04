@@ -328,6 +328,12 @@ public:
     void setRunningNumber( char number = '0' );
 
     /**
+     * @brief getRunningNumber
+     * @return
+     */
+    char getRunningNumber();
+
+    /**
      * @brief Parses a package
      * @param package received bytes
      * @return true on success

@@ -164,6 +164,7 @@ void ClientSocket::manageBufferedData(QByteArray &buffer)
                     halfPackage.append(buffer.at(i));
                     if( halfPackage.contains(STX) && halfPackage.contains(ETX) ){
                         protocolManager.parsePackage(halfPackage);
+                        qDebug()<< QString(halfPackage);
                     }
                     halfPackage.clear();
                 }
@@ -179,6 +180,7 @@ void ClientSocket::manageBufferedData(QByteArray &buffer)
                 halfPackage.append(buffer.at(i));
                 if( halfPackage.contains(STX) && halfPackage.contains(ETX) ){
                     protocolManager.parsePackage(halfPackage);
+                    qDebug()<< QString(halfPackage);
                 }
                 halfPackage.clear();
             }
@@ -376,6 +378,14 @@ void ClientSocket::sendHostReset()
     protocolManager.setProtocolAddress( QString::number( hostId!=0 ? hostId : HOST_ID ) );
     protocolManager.createEmptyPackage( package );
     protocolManager.insertCommand_ClientReset( package, CLIENT_NORMAL_OPERATION, false );
+    tcpSocket->write(package);
+}
+
+void ClientSocket::sendEmptyPackage()
+{
+    QByteArray package;
+    protocolManager.setProtocolAddress( QString::number( hostId!=0 ? hostId : HOST_ID ) );
+    protocolManager.createEmptyPackage( package );
     tcpSocket->write(package);
 }
 

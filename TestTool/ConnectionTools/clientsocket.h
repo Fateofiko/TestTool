@@ -48,6 +48,7 @@ public:
     void sendDisableDisplay(const QString &clientAddr, int typeD );
     void sendClientReset( const QString &clientAddr );
     void sendHostReset();
+    void sendEmptyPackage();
 signals:
 
 public slots:

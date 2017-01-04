@@ -36,6 +36,11 @@ void ProtocolManager::setRunningNumber( char number )
     }
 }
 
+char ProtocolManager::getRunningNumber()
+{
+    return this->runningNumber;
+}
+
 void ProtocolManager::appendHeader( QByteArray &package, bool includeType )
 {
     package.append( STX );
@@ -747,6 +752,7 @@ void ProtocolManager::insertCommand_ClientNewRestart(QByteArray &package, Client
 
     char st = (int) state;
     command.append(st);
+    command.append('0');
 
     encodeCommand( command );
     insertCommandToPackage( package, command );
@@ -1114,7 +1120,7 @@ void ProtocolManager::execCommand_ClientReset(const QByteArray &command)
 
 void ProtocolManager::execCommand_ClientNewRestart(const QByteArray &command)
 {
-    if(command.length() < 2) {
+    if(command.length() < 3) {
         qWarning() << "execCommand_ClientNewRestart() - Not a valid command length!";
         return;
     }

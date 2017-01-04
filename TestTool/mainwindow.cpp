@@ -84,3 +84,8 @@ void MainWindow::on_pushButton_HostReset_clicked()
 {
     socket.sendHostReset();
 }
+
+void MainWindow::on_pushButton_SendEmptyPackage_clicked()
+{
+    socket.sendEmptyPackage();
+}

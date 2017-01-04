@@ -44,6 +44,8 @@ private slots:
 
     void on_pushButton_HostReset_clicked();
 
+    void on_pushButton_SendEmptyPackage_clicked();
+
 private:
     Ui::MainWindow *ui;
     ClientSocket socket;

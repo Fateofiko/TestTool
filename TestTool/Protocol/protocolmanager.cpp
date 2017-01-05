@@ -395,6 +395,20 @@ bool ProtocolManager::isPackageContainsCustomCmd(const QByteArray &package)
         return false;
 }
 
+bool ProtocolManager::switchAddresses(const QByteArray &package, QByteArray &newPack)
+{
+    if( package.size() < 17 ){
+        qDebug()<<"Can't switch the addresses!";
+        return false;
+    }
+    QByteArray firstAddr = package.mid( 1, 4 );
+    QByteArray secondAddr = package.mid( 8, 4);
+    newPack = package;
+    newPack.replace(1, secondAddr.size(), secondAddr);
+    newPack.replace(8, firstAddr.size(), firstAddr);
+    return true;
+}
+
 int ProtocolManager::getPackageFirstCommand(const QByteArray &package)
 {
     QString command = getDataArrayFromEncodedPackage( package, 0, 1);

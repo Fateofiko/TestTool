@@ -371,6 +371,7 @@ public:
      */
     bool isPackageContainsSecondAddr(const QByteArray &package);
     bool isPackageContainsCustomCmd(const QByteArray &package);
+    bool switchAddresses( const QByteArray &package, QByteArray &newPack );
 
     // TERMINAL COMMANDS
     /**

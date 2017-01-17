@@ -30,6 +30,7 @@ public:
     QString hostIp;
     QString hostPort;
     int hostId;
+    int testNoReceiver;
 
     void sendDataToHost( const QString &messageForHost );
     void sendPackageToHost(const QByteArray &packageForHost);
@@ -49,6 +50,8 @@ public:
     void sendClientReset( const QString &clientAddr );
     void sendHostReset();
     void sendEmptyPackage();
+    void sendStateOk();
+    void sendStateNoReceiver();
 signals:
 
 public slots:
@@ -63,12 +66,15 @@ public slots:
     void handleStatusOk();
     void handleScannedMessage( ScanType type, BarcodeState state, const QString &scanedData );
     void handleClientResetDone( const QString &hardwareV, const QString &softwareV, const QString &clientId );
+    void handleKeyMessage( QList< KeyState > state, int keyTime, int timeSince );
 private:
 
     QByteArray halfPackage;             ///<
     void createSocket();
     void manageBufferedData( QByteArray &buffer );
 
+    void sendPackageOnPieces(QByteArray &package);
+    void sendPackageDoubleOnPieces(QByteArray &package);
 protected:
     void timerEvent(QTimerEvent *event);
 };

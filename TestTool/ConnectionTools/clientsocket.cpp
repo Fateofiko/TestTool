@@ -9,6 +9,7 @@ ClientSocket::ClientSocket(QObject *parent) : QObject(parent)
     hostIp = "";
     hostPort = "";
     hostId = 0;
+    testNoReceiver = 0;
 
     connect( &protocolManager, SIGNAL( executed_DTC(QString,QString)), this, SLOT( dataToClient(QString,QString) ) );
     connect( &protocolManager, SIGNAL( statusOk()), this, SLOT( handleStatusOk() ) );
@@ -16,6 +17,7 @@ ClientSocket::ClientSocket(QObject *parent) : QObject(parent)
     connect( &protocolManager, SIGNAL( executed_ClientInfo(QString,ClientStates)), this, SLOT( handleDeliverClientInfo(QString,ClientStates)) );
     connect( &protocolManager, SIGNAL( executed_ScannedMessage(ScanType,BarcodeState,QString)), this, SLOT( handleScannedMessage(ScanType,BarcodeState,QString) ) );
     connect( &protocolManager, SIGNAL( executed_ClientResetDone(QString,QString,QString)), this, SLOT( handleClientResetDone(QString,QString,QString) ) );
+    connect( &protocolManager, SIGNAL( executed_KeyMessage(QList<KeyState>,int,int)), this, SLOT( handleKeyMessage(QList<KeyState>,int,int) ) );
 }
 
 ClientSocket::~ClientSocket()
@@ -164,7 +166,7 @@ void ClientSocket::manageBufferedData(QByteArray &buffer)
                     halfPackage.append(buffer.at(i));
                     if( halfPackage.contains(STX) && halfPackage.contains(ETX) ){
                         protocolManager.parsePackage(halfPackage);
-                        qDebug()<< QString(halfPackage);
+//                        qDebug()<< QString(halfPackage);
                     }
                     halfPackage.clear();
                 }
@@ -179,7 +181,10 @@ void ClientSocket::manageBufferedData(QByteArray &buffer)
             } else {
                 halfPackage.append(buffer.at(i));
                 if( halfPackage.contains(STX) && halfPackage.contains(ETX) ){
-                    protocolManager.parsePackage(halfPackage);
+                    if( protocolManager.parsePackage(halfPackage) )
+                        sendStateOk();
+                    else
+                        sendStateNoReceiver();
                     qDebug()<< QString(halfPackage);
                 }
                 halfPackage.clear();
@@ -242,6 +247,7 @@ void ClientSocket::handleScannedMessage(ScanType type, BarcodeState state, const
         case SCAN_MANUAL : scanType = "manual"; break;
         default: scanType = "error"; break;
     }
+    sendStateOk();
     switch(state){
         case SUCCESSFULLY_SCANNED : scanState = "Barcode successfully scanned"; break;
         case TIMEOUT : scanState = "Timeout (ACT time exceeded)"; break;
@@ -258,6 +264,12 @@ void ClientSocket::handleScannedMessage(ScanType type, BarcodeState state, const
 void ClientSocket::handleClientResetDone(const QString &hardwareV, const QString &softwareV, const QString &clientId)
 {
     qDebug()<<"ResetDone: "<<hardwareV;
+    sendStateOk();
+}
+
+void ClientSocket::handleKeyMessage(QList<KeyState> state, int keyTime, int timeSince)
+{
+    sendStateOk();
 }
 
 void ClientSocket::sendQueryConfiguration()
@@ -293,9 +305,35 @@ void ClientSocket::sendDisplayToClient(const QString &clientAddr, const QString 
     protocolManager.setProtocolAddress( QString::number( hostId!=0 ? hostId : HOST_ID ) );
     protocolManager.createEmptyPackage( package );
     QString colors = QString("%1%2%3").arg( red ? '1' : '0').arg( green ? '1' : '0').arg( blue ? '1' : '0');
-    colors.append("000");
-    protocolManager.insertCommand_DTC(package,QString("E002%1iioo123%2").arg( boxCount ).arg(colors), clientAddr, false);
+    colors.append("010");
+    protocolManager.insertCommand_DTC(package,QString("E002%1iioo010%2").arg( boxCount ).arg(colors), clientAddr, false);
     tcpSocket->write(package);
+//    sendPackageOnPieces( package );
+//    sendPackageDoubleOnPieces( package );
+}
+
+void ClientSocket::sendPackageOnPieces( QByteArray &package )
+{
+    tcpSocket->write( package.mid(0,5) );
+    tcpSocket->flush();
+    tcpSocket->write( package.mid( 5, 5 ) );
+    tcpSocket->flush();
+    tcpSocket->write( package.mid( 10, package.size()-10 ) );
+    tcpSocket->flush();
+}
+
+void ClientSocket::sendPackageDoubleOnPieces( QByteArray &package )
+{
+    QByteArray newPackage;
+    newPackage.append(package);
+    newPackage.append(package);
+
+    tcpSocket->write( newPackage.mid(0,10) );
+    tcpSocket->flush();
+    tcpSocket->write( newPackage.mid( 10, 10 ) );
+    tcpSocket->flush();
+    tcpSocket->write( newPackage.mid( 20, newPackage.size()-20 ) );
+    tcpSocket->flush();
 }
 
 void ClientSocket::sendDisplayConfiguration(const QString &clientAddr)
@@ -320,7 +358,7 @@ void ClientSocket::sendSpecialDisplay(const QString &clientAddr, const QString &
     QByteArray package;
     protocolManager.setProtocolAddress( QString::number( hostId!=0 ? hostId : HOST_ID ) );
     protocolManager.createEmptyPackage( package );
-    protocolManager.insertCommand_DTC(package, QString("F%1%2%3").arg(QString(cT)).arg(screenMessage).arg("00001000"), clientAddr, false);
+    protocolManager.insertCommand_DTC(package, QString("F%1%2%3").arg(QString(cT)).arg(screenMessage).arg("01000000"), clientAddr, false);
     tcpSocket->write(package);
 }
 
@@ -386,6 +424,22 @@ void ClientSocket::sendEmptyPackage()
     QByteArray package;
     protocolManager.setProtocolAddress( QString::number( hostId!=0 ? hostId : HOST_ID ) );
     protocolManager.createEmptyPackage( package );
+    tcpSocket->write(package);
+}
+
+void ClientSocket::sendStateOk()
+{
+    QByteArray package;
+    protocolManager.setProtocolAddress( QString::number( hostId!=0 ? hostId : HOST_ID ) );
+    protocolManager.createStatusPackage(package, OK);
+    tcpSocket->write(package);
+}
+
+void ClientSocket::sendStateNoReceiver()
+{
+    QByteArray package;
+    protocolManager.setProtocolAddress( QString::number( hostId!=0 ? hostId : HOST_ID ) );
+    protocolManager.createStatusPackage(package, NO_RECEIVER);
     tcpSocket->write(package);
 }
 

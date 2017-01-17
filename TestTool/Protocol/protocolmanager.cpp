@@ -1100,7 +1100,7 @@ void ProtocolManager::execCommand_KeyMessage(const QByteArray &command)
 
 void ProtocolManager::execCommand_ScannedMessage(const QByteArray &command)
 {
-    if(command.length() < 4) {
+    if(command.length() < 3) {
         qWarning() << "execCommand_ScannedMessage() - Not a valid command length!";
         return;
     }
@@ -1110,8 +1110,9 @@ void ProtocolManager::execCommand_ScannedMessage(const QByteArray &command)
     ScanType scanT = static_cast<ScanType>( ( (int) st ) );
     char bs = command.at(2);
     BarcodeState barcodeS = static_cast<BarcodeState>( ( (int) bs ) );
-
-    QString data = QString( command.mid( 3, ( command.size() - 3 ) ) );
+    QString data = "";
+    if( ( command.size() - 3 ) > 0 )
+        data = QString( command.mid( 3, ( command.size() - 3 ) ) );
 
     qDebug() << cmd << st << bs << data ;
     emit executed_ScannedMessage( scanT, barcodeS, data );

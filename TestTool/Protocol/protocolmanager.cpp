@@ -783,7 +783,7 @@ void ProtocolManager::insertCommand_ClientResetDone(QByteArray &package, QString
     command.append( "00" );
     appendStrToCommand( command, softwareV, 2 );
     command.append( "00" );
-    appendStrToCommand( command, clientId, 4 );
+    appendStrToCommand( command, clientId, 8 );
     command.append( "0000" );
 
     encodeCommand( command );
@@ -857,7 +857,7 @@ void ProtocolManager::execCommand_DTC(const QByteArray &command)
 
 void ProtocolManager::execCommand_SetConfiguration(const QByteArray &command)
 {
-    if(command.length() < 24) {
+    if(command.length() < 25) {
         qWarning() << "execCommand_SetConfiguration() - Not a valid command length!";
         return;
     }
@@ -904,7 +904,7 @@ void ProtocolManager::execCommand_QueryClientInfo(const QByteArray &command)
 
 void ProtocolManager::execCommand_CurrentConfiguration(const QByteArray &command)
 {
-    if(command.length() < 24) {
+    if(command.length() < 25) {
         qWarning() << "execCommand_CurrentConfiguration() - Not a valid command length!";
         return;
     }
@@ -937,7 +937,7 @@ void ProtocolManager::execCommand_ClientInfo(const QByteArray &command)
 
 void ProtocolManager::execCommand_DisplaySetConf(const QByteArray &command)
 {
-    if(command.length() < 7) {
+    if(command.length() < 5) {
         qWarning() << "execCommand_DisplaySetConf() - Not a valid command length!";
         return;
     }
@@ -1148,14 +1148,14 @@ void ProtocolManager::execCommand_ClientNewRestart(const QByteArray &command)
 
 void ProtocolManager::execCommand_ClientResetDone(const QByteArray &command)
 {
-    if(command.length() < 17) {
+    if(command.length() < 21) {
         qWarning() << "execCommand_ClientResetDone() - Not a valid command length!";
         return;
     }
     char cmd = command.at(0);
     QString hV = QString( command.mid( 1, 4 ) );
     QString sV = QString( command.mid( 5, 4 ) );
-    QString id = QString( command.mid( 9, 8 ) );
+    QString id = QString( command.mid( 9, 12 ) );
     qDebug() << cmd << hV << sV << id ;
     emit executed_ClientResetDone( hV, sV, id );
 }

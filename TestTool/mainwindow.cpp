@@ -6,6 +6,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    displayCounter = 0;
+    socketConnected = false;
+    this->startTimer( 2000 );
 }
 
 MainWindow::~MainWindow()
@@ -13,14 +16,51 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::timerEvent(QTimerEvent *event)
+{
+    if( socketConnected ){
+
+
+        switch( displayCounter ){
+            case 0:
+                socket.sendDisplayToClient( "2", "22", false, true, false );
+            break;
+            case 1:
+                socket.sendScan("2", 1, 50 );
+            break;
+            case 2:
+                socket.sendScan("2", 2, 50 );
+            break;
+            case 3:
+                socket.sendSpecialDisplay( "2", "", 1);
+            break;
+            case 4:
+                socket.sendSpecialDisplay( "2", "Test Error", 3);
+            break;
+            case 5:
+                socket.sendDisableDisplay( "2", 1 );
+            break;
+        }
+
+        if( displayCounter == 5){
+            displayCounter = 0;
+        } else {
+            displayCounter ++;
+        }
+    }
+
+}
+
 void MainWindow::on_pushButton_restartSocket_clicked()
 {
     socket.restartTheSocket();
+    socketConnected = true;
 }
 
 void MainWindow::on_pushButton_abortSocket_clicked()
 {
     socket.abortSocketConnection();
+    socketConnected = false;
 }
 
 void MainWindow::on_pushButton_QueryConfiguration_clicked()

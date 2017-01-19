@@ -49,6 +49,10 @@ private slots:
 private:
     Ui::MainWindow *ui;
     ClientSocket socket;
+    int displayCounter;
+    bool socketConnected;
+protected:
+    void timerEvent(QTimerEvent *event);
 };
 
 #endif // MAINWINDOW_H

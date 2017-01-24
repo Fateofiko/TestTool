@@ -10,12 +10,12 @@
 #include <QDebug>
 
 #define ASCII_NULL 0x00
-#define SOH 0x01            ///< Separator for the commands in the data section of the protocol
-#define STX 0x02            ///< Start byte
-#define ETX 0x03            ///< Termination byte
-#define EOT 0x04            ///< End of transmission byte
-#define ENQ 0x05            ///< Enquiry
-#define ENCODING_STEP 0x40  ///< Encoding the characters in the data field of the protocol
+#define SOH 0x01                                ///< Separator for the commands in the data section of the protocol
+#define STX 0x02                                ///< Start byte
+#define ETX 0x03                                ///< Termination byte
+#define EOT 0x04                                ///< End of transmission byte
+#define ENQ 0x05                                ///< Enquiry
+#define ENCODING_STEP 0x40                      ///< Encoding the characters in the data field of the protocol
 #define APPEND_NEXT_COMMAND_PACKAGE_POSITION 4  ///< Append next command at the end of the package
 #define RUNNING_NUMBER_POSITION 5               ///< Position of running number field
 #define ADDRESS_START_POSITION 1                ///< Start position of IP address field
@@ -28,7 +28,7 @@
   * indicates a custom command that is not contained in the list of commands
   * in 'Interface iWACS - PickCenter Touch_V002' document
   */
-#define CMD "CMD"
+#define CMD "CMD"                   ///<
 #define FIELD_STATUS "STATUS"       ///< Status field in a custom CMD command from the Host to accept or reject client registration.
 #define FIELD_ID "ID"               ///< Client id in a custom CMD command.
 #define FIELD_LIGHT "LIGHT"         ///< Light field in a custom CMD command to change client settings.
@@ -43,11 +43,11 @@
 #define DATA_STATUS_OK "OK"                         ///< Status data from the Host to a client when accepting registration.
 #define DATA_STATUS_FAILURE "FAIL"                  ///< Status data from the Host to a client when rejecting registration.
 
-static const char TYPE = 'D';
-static const char FIRST_BYTE_FOR_NOCRC = 'N';
-static const char SECOND_BYTE_FOR_NOCRC = 'C';
-static const QString DEFAULT_ADDRESS = "0000";
-static const char DEFAULT_RUNNING_NUMBER = '0';
+static const char TYPE = 'D';                       ///<
+static const char FIRST_BYTE_FOR_NOCRC = 'N';       ///<
+static const char SECOND_BYTE_FOR_NOCRC = 'C';      ///<
+static const QString DEFAULT_ADDRESS = "0000";      ///<
+static const char DEFAULT_RUNNING_NUMBER = '0';     ///<
 
 //Helpfull struct for led handling if the logic changes
 //struct LedColor
@@ -339,24 +339,28 @@ public:
      * @return true on success
      */
     bool parsePackage( const QByteArray &package );
+
     /**
      * @brief getPackageFrameAddr
      * @param package
      * @return
      */
     int getPackageFrameAddr( const QByteArray &package );
+
     /**
      * @brief getPackageFirstCommand
      * @param package
      * @return
      */
     int getPackageFirstCommand( const QByteArray &package );
+
     /**
      * @brief getPackageSecondAddress
      * @param package
      * @return
      */
     QString getPackageSecondAddress( const QByteArray &package );
+
     /**
      * @brief getDataFromPackage
      * @param package
@@ -370,7 +374,20 @@ public:
      * @return
      */
     bool isPackageContainsSecondAddr(const QByteArray &package);
+
+    /**
+     * @brief isPackageContainsCustomCmd
+     * @param package
+     * @return
+     */
     bool isPackageContainsCustomCmd(const QByteArray &package);
+
+    /**
+     * @brief switchAddresses
+     * @param package
+     * @param newPack
+     * @return
+     */
     bool switchAddresses( const QByteArray &package, QByteArray &newPack );
 
     // TERMINAL COMMANDS
@@ -665,6 +682,11 @@ private:
      */
     void appendSOH( QByteArray &command, bool append );
 
+    /**
+     * @brief isDataContainsCommand
+     * @param command
+     * @return
+     */
     bool isDataContainsCommand( const QByteArray &command );
 
     /**
@@ -729,10 +751,24 @@ private:
      */
     bool fixAddressString( QString &address );
 
+    /**
+     * @brief checkValueForDots
+     * @param value
+     */
     void checkValueForDots( QString &value );
 
+    /**
+     * @brief turnValueToDots
+     * @param value
+     * @param numberOfDots
+     */
     void turnValueToDots(QString &value, int numberOfDots);
 
+    /**
+     * @brief insertCommandToPackage
+     * @param package
+     * @param command
+     */
     void insertCommandToPackage( QByteArray &package, const QByteArray &command );
 
     // TERMINAL COMMANDS
@@ -1101,25 +1137,28 @@ signals:
 
 //Signals for status ==================================================
     /**
-     * @brief
+     * @brief statusOk
      */
     void statusOk();
 
     /**
-     * @brief
+     * @brief statusNoReceiver
      */
     void statusNoReceiver();
 
     /**
-     * @brief
+     * @brief statusMessagesOverFlow
      */
     void statusMessagesOverFlow();
 
     /**
-     * @brief
+     * @brief statusRunningNumberError
      */
     void statusRunningNumberError();
 
+    /**
+     * @brief emptyPackageReceived
+     */
     void emptyPackageReceived();
 //=====================================================================
 public slots:

@@ -141,7 +141,7 @@ void ProtocolManager::appendDotsToCommand(QByteArray &command, const int numberO
 
 void ProtocolManager::encodeCommand( QByteArray &command )
 {
-    //ENCODE every single char by inclementing his value with 40h
+    //ENCODE every single char with value equal or below 05h by incrementing his value with 40h
     for(int i=0; i < command.size();i++){
         if( (int) command.at(i) <= (int) ENQ ){
             char single = (int) command.at(i) + ENCODING_STEP;
@@ -155,7 +155,7 @@ void ProtocolManager::encodeCommand( QByteArray &command )
 
 void ProtocolManager::decodeCommand(QByteArray &command)
 {
-    //DECODE every single char by decrease his value with 40h
+    //DECODE every single char with value equal or below 05h by decrease his value with 40h
     for(int i=0; i < command.size();i++){
         if( (int) command.at(i) == (int) ENQ ){
             char single = (int) command.at( i+1 ) - ENCODING_STEP;

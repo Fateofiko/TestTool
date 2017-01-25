@@ -9,7 +9,7 @@
 #include <QVariant>
 #include <QDebug>
 
-#define ASCII_NULL 0x00
+#define ASCII_NULL 0x00                         ///< null from the ascii table
 #define SOH 0x01                                ///< Separator for the commands in the data section of the protocol
 #define STX 0x02                                ///< Start byte
 #define ETX 0x03                                ///< Termination byte
@@ -28,7 +28,7 @@
   * indicates a custom command that is not contained in the list of commands
   * in 'Interface iWACS - PickCenter Touch_V002' document
   */
-#define CMD "CMD"                   ///<
+#define CMD "CMD"                   ///< String who defines that the data are a custom command
 #define FIELD_STATUS "STATUS"       ///< Status field in a custom CMD command from the Host to accept or reject client registration.
 #define FIELD_ID "ID"               ///< Client id in a custom CMD command.
 #define FIELD_LIGHT "LIGHT"         ///< Light field in a custom CMD command to change client settings.
@@ -43,11 +43,11 @@
 #define DATA_STATUS_OK "OK"                         ///< Status data from the Host to a client when accepting registration.
 #define DATA_STATUS_FAILURE "FAIL"                  ///< Status data from the Host to a client when rejecting registration.
 
-static const char TYPE = 'D';                       ///<
-static const char FIRST_BYTE_FOR_NOCRC = 'N';       ///<
-static const char SECOND_BYTE_FOR_NOCRC = 'C';      ///<
-static const QString DEFAULT_ADDRESS = "0000";      ///<
-static const char DEFAULT_RUNNING_NUMBER = '0';     ///<
+static const char TYPE = 'D';                       ///< Static char for the protocol frame
+static const char FIRST_BYTE_FOR_NOCRC = 'N';       ///< Static char for the protocol frame
+static const char SECOND_BYTE_FOR_NOCRC = 'C';      ///< Static char for the protocol frame
+static const QString DEFAULT_ADDRESS = "0000";      ///< Default address for the protocol frame
+static const char DEFAULT_RUNNING_NUMBER = '0';     ///< Default running number for the protocol frame
 
 //Helpfull struct for led handling if the logic changes
 //struct LedColor
@@ -250,31 +250,28 @@ CLIENT COMMANDS
 enum Commands
 {
 //TERMINAL COMMANDS
-
-    TERMINAL_CLIENT_SET_CONFIGURATION = 86,   ///< 'V' - Set Configuration
-//    QUERY_CONFIGURATION = 86,   ///< 'V?' Query Configuration
-    TERMINAL_CLIENT_DATA_TO_CLIENT = 62,   ///< '>' Data to client
-    TERMINAL_CLIENT_QUERY_CLIENT_INFO = 73,   ///<  'I' Query Client Info
-    CLIENT_TERMINAL_SEND_CONFIGURATION = 118,   ///<  'v' Configuration
-    CLIENT_TERMINAL_INFO = 105,   ///< 'i' Client Info
-    CLIENT_TERMINAL_DATA_FROM_CLIENT = 60,   ///< '<' Data from client
+    TERMINAL_CLIENT_SET_CONFIGURATION = 86,                 ///< 'V' - Set Configuration
+//    QUERY_CONFIGURATION = 86,                                 ///< 'V?' Query Configuration
+    TERMINAL_CLIENT_DATA_TO_CLIENT = 62,                    ///< '>' Data to client
+    TERMINAL_CLIENT_QUERY_CLIENT_INFO = 73,                 ///<  'I' Query Client Info
+    CLIENT_TERMINAL_SEND_CONFIGURATION = 118,               ///<  'v' Configuration
+    CLIENT_TERMINAL_INFO = 105,                             ///< 'i' Client Info
+    CLIENT_TERMINAL_DATA_FROM_CLIENT = 60,                  ///< '<' Data from client
 
 //DISPLAY COMMANDS
-
-//    TERMINAL_DISPLAY_SET_CONFIGURATION_TO_DISPLAY = 86,   ///< Set Configuration
-    TERMINAL_DISPLAY_CHANGE_DEVICE_STATE = 69,   ///<  'E' Display
-    TERMINAL_DISPLAY_SPECIAL_DISPLAY = 70,   ///< 'F' Special Display
-    TERMINAL_DISPLAY_SCAN = 83,   ///< 'S' Query Scan
-    TERMINAL_DISPLAY_DISABLE_DISPLAY = 90,   ///< 'Z' Disable Display
-    DISPLAY_TERMINAL_KEY_MESSAGE = 107,   ///< 'k' Key Message
-    DISPLAY_TERMINAL_SCANNED_MESSAGE = 115,   ///< 's' Scanned Message
+//    TERMINAL_DISPLAY_SET_CONFIGURATION_TO_DISPLAY = 86,       ///< Set Configuration
+    TERMINAL_DISPLAY_CHANGE_DEVICE_STATE = 69,              ///<  'E' Display
+    TERMINAL_DISPLAY_SPECIAL_DISPLAY = 70,                  ///< 'F' Special Display
+    TERMINAL_DISPLAY_SCAN = 83,                             ///< 'S' Query Scan
+    TERMINAL_DISPLAY_DISABLE_DISPLAY = 90,                  ///< 'Z' Disable Display
+    DISPLAY_TERMINAL_KEY_MESSAGE = 107,                     ///< 'k' Key Message
+    DISPLAY_TERMINAL_SCANNED_MESSAGE = 115,                 ///< 's' Scanned Message
 
 //CLIENT COMMANDS
-
-    HOST_CLIENT_RESET = 82,   ///< 'R' Reset
-    CLIENT_HOST_NEW_RESTART = 110,   ///< 'n' New Restart
-    CLIENT_HOST_RESET_DONE = 114,   ///< 'r' Reset Done
-    CLIENT_HOST_ERROR_MESSAGE = 102   ///< 'f' Error Message
+    HOST_CLIENT_RESET = 82,                                 ///< 'R' Reset
+    CLIENT_HOST_NEW_RESTART = 110,                          ///< 'n' New Restart
+    CLIENT_HOST_RESET_DONE = 114,                           ///< 'r' Reset Done
+    CLIENT_HOST_ERROR_MESSAGE = 102                         ///< 'f' Error Message
 
 };
 
@@ -288,105 +285,111 @@ class ProtocolManager : public QObject
 public:
     /**
      * @brief Default constructor
-     * @param parent
+     * @param parent : the parent object
      */
     explicit ProtocolManager(QObject *parent = 0);
 
     /**
-     * @brief Decodes a command.
-     * @param command Received command bytes.
+     * @brief Decodes specific bytes from the command argument.
+     * Decode every single char with value equal or below 05h by decrease his value with 40h.
+     * @param command : byte array that contains chars for the data field of the protocol frame
      */
     void decodeCommand( QByteArray &command );
 
     /**
      * @brief Creates empty package.
      *
-     * Creates empty package with header, default address, default running number and package footer.
+     * Creates empty package with header, current address, and current running number and package footer.
+     * If the address and the running number haven't been manually set ( with the setter method for the address and running number), they are with default values.
      * The package don't contains commands.
      *
-     * @param package Bytes to append package data
+     * @param package : should be an empty byte array, if the byte array is not empty, the created package will be appended to this package
      */
     void createEmptyPackage(QByteArray &package);
 
     /**
      * @brief Creates status package to inform for the client status
-     * @param package Bytes to append package data.
-     * @param state Protocl state
+     * @param package : should be an empty byte array, if the byte array is not empty, the created package will be appended to this package
+     * @param state : Protocol state
      */
     void createStatusPackage( QByteArray &package, ProtocolStates state );
 
     /**
-     * @brief Sets address
-     * @param addr Four char string. Default is "0000"
+     * @brief Setter method for address
+     * If the address is not valid the default value will be set.
+     * @param addr : Four char string. Default is "0000".
      */
     void setProtocolAddress( QString addr );
 
     /**
-     * @brief Sets running number
-     * @param number
+     * @brief Setter method for the running number
+     * If the running number is not a valid char, a default char will be set.
+     * @param number : char from '0' to '9'
      */
     void setRunningNumber( char number = '0' );
 
     /**
-     * @brief getRunningNumber
-     * @return
+     * @brief Getter method for the running number
+     * @return the current running number char
      */
     char getRunningNumber();
 
     /**
-     * @brief Parses a package
-     * @param package received bytes
+     * @brief Parses a single protocol frame and execute all of the commands, that the data field contains.
+     * @param package : should contains a single protocol frame
      * @return true on success
      */
     bool parsePackage( const QByteArray &package );
 
     /**
-     * @brief getPackageFrameAddr
-     * @param package
-     * @return
+     * @brief Takes the first address from the protocol frame, and converts it to integer.
+     * @param package : should contains a single protocol frame
+     * @return integer value of the address from the protocol frame
      */
     int getPackageFrameAddr( const QByteArray &package );
 
     /**
-     * @brief getPackageFirstCommand
-     * @param package
-     * @return
+     * @brief Finds the symbol that shows the meaning of the first command.
+     * @param package : should contains a single protocol frame
+     * @return integer value of the command char (symbol)
      */
     int getPackageFirstCommand( const QByteArray &package );
 
     /**
-     * @brief getPackageSecondAddress
-     * @param package
-     * @return
+     * @brief Takes the address from the first command from the data field, if the command contains address.
+     * @param package : should contains a single protocol frame
+     * @return string representation of the address, or empty string if there is no such address
      */
     QString getPackageSecondAddress( const QByteArray &package );
 
     /**
-     * @brief getDataFromPackage
-     * @param package
-     * @return
+     * @brief Takes string from the data field from the protocol frame with start point #startChar and string length #numberOfChars
+     * @param package : should contains a single protocol frame
+     * @return specific string from the data field of the protocol frame
      */
     QString getDataArrayFromEncodedPackage( const QByteArray &package, int startChar, int numberOfChars );
 
     /**
-     * @brief isPackageContainsSecondAddr
-     * @param package
-     * @return
+     * @brief Checks if the first command from the data field from the protocol frame contains address
+     * @param package : should contains a single protocol frame
+     * @return "true" if the command contains address, otherwise "false"
      */
     bool isPackageContainsSecondAddr(const QByteArray &package);
 
     /**
-     * @brief isPackageContainsCustomCmd
-     * @param package
-     * @return
+     * @brief Checks if the first command from the data field from the protocol frame contains custom command
+     * @param package : should contains a single protocol frame
+     * @return "true" if the command contains custom command, otherwise "false"
      */
     bool isPackageContainsCustomCmd(const QByteArray &package);
 
     /**
-     * @brief switchAddresses
-     * @param package
-     * @param newPack
-     * @return
+     * @brief Switches the address from the protocol frame with the address of the first command from the data field from the protocol frame.
+     * Before using this command to switch the addresses of a valid protocol frame, you should use the method
+     *  " bool isPackageContainsSecondAddr(const QByteArray &package) " to make sure that the package contains second address.
+     * @param package : should contains a single protocol frame
+     * @param newPack : must contains an empty byte array
+     * @return "true" if the switch is successful, otherwise "false"
      */
     bool switchAddresses( const QByteArray &package, QByteArray &newPack );
 
@@ -651,8 +654,8 @@ public:
     void insertCommand_ClientErrorMessage( QByteArray &package, int errorNumber, int errorSpecs, bool includeSOH );
 
 //==================================================================================================================
-    QString receivedPackageAddress; ///< Address of the received package.
-    char receivedPackageRunningNumber; ///< Running number of received package
+    QString receivedPackageAddress; ///< Address from the last parsed package.
+    char receivedPackageRunningNumber; ///< Running number from the last parsed package.
 
 private:
     QString address; ///< Address
@@ -660,10 +663,11 @@ private:
 
     /**
      * @brief Apend header to the package
-     * The address in the header of the package is default address, and the runnung number is default too
+     * The address in the header of the package is the current address that was set with the setter method, otherwise is a default address
+     * , and the running number is the current running number that was set with the setter method, otherwise is a default running number.
      *
-     * @param package Package to use
-     * @param includeType
+     * @param package : package for developing
+     * @param includeType : if "true" appends the char for the protocol frame, the acknowledge frame do not contains this char
      */
     void appendHeader(QByteArray &package, bool includeType);
 
@@ -671,38 +675,38 @@ private:
      * @brief Append footer to the package
      * Append the EOT, CRC and ETX characters
      *
-     * @param package
+     * @param package : package for developing
      */
     void appendFooter( QByteArray &package );
 
     /**
      * @brief Append SOH to a command.
-     * @param command Command to use
-     * @param append
+     * @param command : command for developing
+     * @param append : if "true" appends the char
      */
     void appendSOH( QByteArray &command, bool append );
 
     /**
-     * @brief isDataContainsCommand
-     * @param command
-     * @return
+     * @brief Checks if the first byte of the array is a special char for command from the protocol
+     * @param command : command from the data field from the protocol frame
+     * @return "true" if the first byte is a special char
      */
     bool isDataContainsCommand( const QByteArray &command );
 
     /**
-     * @brief Append Int value to a command.
+     * @brief Appends the digits of integer value to the byte array.
      *
-     * @param command Command to use
-     * @param value Value for append to given command
-     * @param numberOfBytes Number of bytes
-     * @param maxValue Max possible value
-     * @param minValue Min possible value
-     * @param defaultValue Default value to use if given value is not in [min, max] range.
+     * @param command : Command to use
+     * @param value : Value for append to given command
+     * @param numberOfBytes : Number of bytes
+     * @param maxValue : Max possible value
+     * @param minValue : Min possible value
+     * @param defaultValue : Default value to use if given value is not in [min, max] range.
      */
     void appendIntToCommand( QByteArray &command, int value, int numberOfBytes, int maxValue, int minValue, int defaultValue );
 
     /**
-     * @brief Append string value to a command.
+     * @brief Appends the chars of string to the byte array.
      *
      * @param command Command to use
      * @param str
@@ -711,7 +715,7 @@ private:
     void appendStrToCommand( QByteArray &command, QString &str, int numberOfBytes );
 
     /**
-     * @brief Append string value to a command.
+     * @brief Append all chars of the string to the byte array.
      * @param command Command to use
      * @param str
      */
